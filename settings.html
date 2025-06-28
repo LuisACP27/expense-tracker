@@ -318,8 +318,37 @@
             // Configurar botón de cierre de sesión
             document.getElementById('logout-btn').addEventListener('click', function() {
                 showConfirmDialog('¿Estás seguro de que quieres cerrar sesión?', function() {
+                    // Obtener el prefijo del usuario actual
+                    const userId = localStorage.getItem('user_id');
+                    const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+                    
+                    // Guardar temporalmente los datos de autenticación
+                    const authData = {
+                        pin: localStorage.getItem(`${userPrefix}_pin`),
+                        password: localStorage.getItem(`${userPrefix}_password`),
+                        authType: localStorage.getItem(`${userPrefix}_auth_type`),
+                        pinEnabled: localStorage.getItem(`${userPrefix}_pin_enabled`)
+                    };
+                    
                     // Limpiar datos de sesión
-                    sessionStorage.removeItem('pin_ok');
+                    sessionStorage.clear();
+                    
+                    // Limpiar datos de usuario actual
+                    localStorage.removeItem('user_id');
+                    localStorage.removeItem('user_name');
+                    localStorage.removeItem('user_email');
+                    localStorage.removeItem('user_photo');
+                    localStorage.removeItem('current_user_prefix');
+                    
+                    // Restaurar datos de autenticación para futuro inicio de sesión
+                    if (authData.authType) {
+                        localStorage.setItem(`${userPrefix}_pin`, authData.pin);
+                        localStorage.setItem(`${userPrefix}_password`, authData.password);
+                        localStorage.setItem(`${userPrefix}_auth_type`, authData.authType);
+                        localStorage.setItem(`${userPrefix}_pin_enabled`, authData.pinEnabled);
+                    }
+                    
+                    console.log("Sesión cerrada. Datos de autenticación preservados para:", userPrefix);
                     
                     // Redirigir a la página de bienvenida
                     window.location.href = 'welcome.html';

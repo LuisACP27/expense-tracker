@@ -170,227 +170,92 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
-        // Verificar si ya hay un usuario guardado y tiene método de seguridad configurado
+        // Verificar si ya hay un usuario guardado y tiene método de seguridad
         document.addEventListener('DOMContentLoaded', () => {
-            const userId = localStorage.getItem('user_id');
+            // Obtener el modo de la URL (login o register)
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode') || 'register';
             
-            if (userId) {
-                // Si ya hay un usuario guardado, verificar si tiene método de seguridad
-                const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
-                const authType = localStorage.getItem(`${userPrefix}_auth_type`);
-                
-                console.log("Usuario ya guardado:", userId);
-                console.log("Prefijo:", userPrefix);
-                console.log("Tipo de autenticación:", authType);
-                
-                // Si tiene método de seguridad, redirigir a pin.html
-                if (authType) {
-                    console.log("Redirigiendo a página de verificación");
-                    window.location.href = 'pin.html';
-                }
+            // Configurar la interfaz según el modo
+            const titleElement = document.querySelector('h1');
+            const googleButton = document.getElementById('google-signin');
+            
+            if (mode === 'login') {
+                titleElement.textContent = 'Iniciar Sesión';
+                googleButton.textContent = 'Continuar con Google';
+            } else {
+                titleElement.textContent = 'Registrarse';
+                googleButton.textContent = 'Registrarse con Google';
             }
             
-            // Cargar idioma guardado
-            loadLanguage();
-        });
-        
-        // Determinar si estamos en modo login o register
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode') || 'login';
-        
-        // Cargar idioma guardado
-        function loadLanguage() {
-            const savedLanguage = localStorage.getItem('app_language') || 'es';
-            updateLanguageUI(savedLanguage);
-        }
-        
-        // Actualizar UI según el idioma
-        function updateLanguageUI(lang) {
-            const translations = {
-                'es': {
-                    title: mode === 'login' ? 'Iniciar Sesión' : 'Registrarse',
-                    googleButton: 'Continuar con Google',
-                    processing: 'Procesando...',
-                    back: 'Volver',
-                    errors: {
-                        popupClosed: 'Se cerró la ventana de autenticación. Inténtalo de nuevo.',
-                        popupCancelled: 'Se canceló la solicitud de autenticación. Inténtalo de nuevo.',
-                        popupBlocked: 'El navegador bloqueó la ventana emergente. Permite ventanas emergentes e inténtalo de nuevo.',
-                        notAllowed: 'La autenticación con Google no está habilitada. Contacta al administrador.',
-                        default: 'Error al iniciar sesión: '
-                    }
-                },
-                'en': {
-                    title: mode === 'login' ? 'Login' : 'Register',
-                    googleButton: 'Continue with Google',
-                    processing: 'Processing...',
-                    back: 'Back',
-                    errors: {
-                        popupClosed: 'Authentication window was closed. Please try again.',
-                        popupCancelled: 'Authentication request was cancelled. Please try again.',
-                        popupBlocked: 'Browser blocked the popup. Please allow popups and try again.',
-                        notAllowed: 'Google authentication is not enabled. Contact the administrator.',
-                        default: 'Login error: '
-                    }
-                },
-                'pt': {
-                    title: mode === 'login' ? 'Entrar' : 'Registrar',
-                    googleButton: 'Continuar com Google',
-                    processing: 'Processando...',
-                    back: 'Voltar',
-                    errors: {
-                        popupClosed: 'A janela de autenticação foi fechada. Por favor, tente novamente.',
-                        popupCancelled: 'O pedido de autenticação foi cancelado. Por favor, tente novamente.',
-                        popupBlocked: 'O navegador bloqueou o popup. Por favor, permita popups e tente novamente.',
-                        notAllowed: 'A autenticação do Google não está ativada. Contacte o administrador.',
-                        default: 'Erro de login: '
-                    }
-                },
-                'fr': {
-                    title: mode === 'login' ? 'Connexion' : 'S\'inscrire',
-                    googleButton: 'Continuer avec Google',
-                    processing: 'Traitement en cours...',
-                    back: 'Retour',
-                    errors: {
-                        popupClosed: 'La fenêtre d\'authentification a été fermée. Veuillez réessayer.',
-                        popupCancelled: 'La demande d\'authentification a été annulée. Veuillez réessayer.',
-                        popupBlocked: 'Le navigateur a bloqué la fenêtre contextuelle. Veuillez autoriser les popups et réessayer.',
-                        notAllowed: 'L\'authentification Google n\'est pas activée. Contactez l\'administrateur.',
-                        default: 'Erreur de connexion: '
-                    }
-                }
-            };
-            
-            const t = translations[lang] || translations['es'];
-            
-            // Actualizar textos
-            document.getElementById('auth-title').textContent = t.title;
-            document.getElementById('google-signin').innerHTML = `
-                <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
-                </svg>
-                ${t.googleButton}
-            `;
-            document.querySelector('#loading-indicator p').textContent = t.processing;
-            document.querySelector('.back-btn').innerHTML = `← ${t.back}`;
-            
-            // Guardar traducciones de errores para usar más tarde
-            window.errorTranslations = t.errors;
-            
-            // Actualizar el atributo lang del HTML
-            document.documentElement.lang = lang;
-        }
-        
-        // Configurar el botón de Google Sign-In
-        document.getElementById('google-signin').addEventListener('click', () => {
-            // Mostrar indicador de carga
-            document.getElementById('loading-indicator').style.display = 'block';
-            
-            // Ocultar mensajes de error previos
-            document.getElementById('error-container').style.display = 'none';
-            
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    // El usuario ha iniciado sesión correctamente
-                    const user = result.user;
-                    const isNewUser = result.additionalUserInfo.isNewUser;
-                    
-                    // Guardar información del usuario en localStorage
-                    localStorage.setItem('user_id', user.uid);
-                    localStorage.setItem('user_email', user.email);
-                    localStorage.setItem('user_name', user.displayName);
-                    localStorage.setItem('user_photo', user.photoURL);
-                    
-                    // Crear un prefijo único para este usuario para almacenar sus datos
-                    const userPrefix = `user_${user.uid}`;
-                    localStorage.setItem('current_user_prefix', userPrefix);
-                    
-                    console.log("Usuario:", user.displayName);
-                    console.log("Es nuevo usuario:", isNewUser);
-                    console.log("Prefijo de usuario:", userPrefix);
-                    
-                    // Verificar si el usuario ya tiene configurado un método de seguridad
-                    // Primero intentamos con el nuevo formato de clave
-                    let authType = localStorage.getItem(`${userPrefix}_auth_type`);
-                    
-                    // Si no existe, verificamos con el formato antiguo por compatibilidad
-                    if (!authType && !isNewUser) {
-                        const oldAuthType = localStorage.getItem('auth_type');
-                        if (oldAuthType) {
-                            // Migrar del formato antiguo al nuevo
-                            console.log("Migrando configuración antigua a nuevo formato");
-                            localStorage.setItem(`${userPrefix}_auth_type`, oldAuthType);
-                            
-                            // Migrar PIN si existe
-                            const oldPin = localStorage.getItem('user_pin');
-                            if (oldPin) {
-                                localStorage.setItem(`${userPrefix}_pin`, oldPin);
+            // Configurar el botón de Google
+            googleButton.addEventListener('click', () => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => {
+                        // El usuario ha iniciado sesión correctamente
+                        const user = result.user;
+                        const isNewUser = result.additionalUserInfo.isNewUser;
+                        
+                        // Guardar información del usuario en localStorage
+                        localStorage.setItem('user_id', user.uid);
+                        localStorage.setItem('user_email', user.email);
+                        localStorage.setItem('user_name', user.displayName);
+                        localStorage.setItem('user_photo', user.photoURL);
+                        
+                        // Crear un prefijo único para este usuario para almacenar sus datos
+                        const userPrefix = `user_${user.uid}`;
+                        localStorage.setItem('current_user_prefix', userPrefix);
+                        
+                        console.log("Usuario:", user.displayName);
+                        console.log("Es nuevo usuario:", isNewUser);
+                        console.log("Prefijo de usuario:", userPrefix);
+                        
+                        // Verificar si el usuario ya tiene configurado un método de seguridad
+                        // Primero intentamos con el nuevo formato de clave
+                        let authType = localStorage.getItem(`${userPrefix}_auth_type`);
+                        
+                        // Si no existe, verificamos con el formato antiguo por compatibilidad
+                        if (!authType && !isNewUser) {
+                            const oldAuthType = localStorage.getItem('auth_type');
+                            if (oldAuthType) {
+                                // Migrar del formato antiguo al nuevo
+                                console.log("Migrando configuración antigua a nuevo formato");
+                                localStorage.setItem(`${userPrefix}_auth_type`, oldAuthType);
+                                
+                                // Migrar PIN si existe
+                                const oldPin = localStorage.getItem('user_pin');
+                                if (oldPin) {
+                                    localStorage.setItem(`${userPrefix}_pin`, oldPin);
+                                }
+                                
+                                // Migrar contraseña si existe
+                                const oldPassword = localStorage.getItem('user_password');
+                                if (oldPassword) {
+                                    localStorage.setItem(`${userPrefix}_password`, oldPassword);
+                                }
+                                
+                                authType = oldAuthType;
                             }
-                            
-                            // Migrar contraseña si existe
-                            const oldPassword = localStorage.getItem('user_password');
-                            if (oldPassword) {
-                                localStorage.setItem(`${userPrefix}_password`, oldPassword);
-                            }
-                            
-                            authType = oldAuthType;
                         }
-                    }
-                    
-                    console.log("Tipo de autenticación configurado:", authType);
-                    
-                    if (authType) {
-                        // Si ya tiene configurado un método de seguridad, redirigir a la página de PIN
-                        console.log("Redirigiendo a página de PIN/contraseña");
-                        window.location.href = 'pin.html';
-                    } else {
-                        // Si no tiene configurado un método de seguridad, redirigir a opciones de seguridad
-                        console.log("Redirigiendo a opciones de seguridad (sin método configurado)");
-                        window.location.href = 'security-options.html';
-                    }
-                })
-                .catch((error) => {
-                    // Ocultar indicador de carga
-                    document.getElementById('loading-indicator').style.display = 'none';
-                    
-                    // Manejar errores
-                    console.error('Error de autenticación:', error);
-                    
-                    // Mostrar mensaje de error específico
-                    const errorContainer = document.getElementById('error-container');
-                    errorContainer.style.display = 'block';
-                    
-                    // Usar traducciones de errores
-                    const errors = window.errorTranslations || {
-                        popupClosed: 'Se cerró la ventana de autenticación. Inténtalo de nuevo.',
-                        popupCancelled: 'Se canceló la solicitud de autenticación. Inténtalo de nuevo.',
-                        popupBlocked: 'El navegador bloqueó la ventana emergente. Permite ventanas emergentes e inténtalo de nuevo.',
-                        notAllowed: 'La autenticación con Google no está habilitada. Contacta al administrador.',
-                        default: 'Error al iniciar sesión: '
-                    };
-                    
-                    switch(error.code) {
-                        case 'auth/popup-closed-by-user':
-                            errorContainer.textContent = errors.popupClosed;
-                            break;
-                        case 'auth/cancelled-popup-request':
-                            errorContainer.textContent = errors.popupCancelled;
-                            break;
-                        case 'auth/popup-blocked':
-                            errorContainer.textContent = errors.popupBlocked;
-                            break;
-                        case 'auth/operation-not-allowed':
-                            errorContainer.textContent = errors.notAllowed;
-                            break;
-                        default:
-                            errorContainer.textContent = errors.default + error.message;
-                    }
-                });
+                        
+                        console.log("Tipo de autenticación configurado:", authType);
+                        
+                        if (authType) {
+                            // Si ya tiene configurado un método de seguridad, redirigir a la página de PIN
+                            console.log("Redirigiendo a página de PIN/contraseña");
+                            window.location.href = 'pin.html';
+                        } else {
+                            // Si no tiene configurado un método de seguridad, redirigir a opciones de seguridad
+                            console.log("Redirigiendo a opciones de seguridad (sin método configurado)");
+                            window.location.href = 'security-options.html';
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error de autenticación:", error);
+                        alert("Error al autenticar: " + error.message);
+                    });
+            });
         });
     </script>
 </body>

@@ -136,61 +136,17 @@
     <script>
         // Verificar si el usuario ya está registrado
         document.addEventListener('DOMContentLoaded', () => {
-            const userId = localStorage.getItem('user_id');
-            if (userId) {
-                // El usuario ya está registrado, mostrar mensaje y redirigir
-                const welcomeCard = document.querySelector('.welcome-card');
-                const currentLanguage = localStorage.getItem('app_language') || 'es';
-                const translations = {
-                    'es': {
-                        title: 'Mi Gestor Financiero',
-                        alreadyRegistered: 'Ya tienes una cuenta registrada',
-                        login: 'Iniciar Sesión',
-                        redirecting: 'Redirigiendo a inicio de sesión...'
-                    },
-                    'en': {
-                        title: 'My Financial Manager',
-                        alreadyRegistered: 'You already have a registered account',
-                        login: 'Login',
-                        redirecting: 'Redirecting to login...'
-                    },
-                    'pt': {
-                        title: 'Meu Gerenciador Financeiro',
-                        alreadyRegistered: 'Você já tem uma conta registrada',
-                        login: 'Entrar',
-                        redirecting: 'Redirecionando para login...'
-                    },
-                    'fr': {
-                        title: 'Mon Gestionnaire Financier',
-                        alreadyRegistered: 'Vous avez déjà un compte enregistré',
-                        login: 'Connexion',
-                        redirecting: 'Redirection vers la connexion...'
-                    }
-                };
-                
-                const t = translations[currentLanguage] || translations['es'];
-                
-                welcomeCard.innerHTML = `
-                    <div class="app-logo">💰</div>
-                    <h1 class="welcome-title">${t.title}</h1>
-                    <p class="welcome-subtitle">${t.alreadyRegistered}</p>
-                    <div class="auth-buttons">
-                        <button class="btn-auth btn-login" id="login-redirect-btn">${t.login}</button>
-                    </div>
-                    <p class="redirecting-text" style="margin-top: 20px; color: #666;">${t.redirecting}</p>
-                `;
-                
-                document.getElementById('login-redirect-btn').addEventListener('click', () => {
-                    window.location.href = 'auth.html?mode=login';
-                });
-                
-                // Redirigir automáticamente después de 2 segundos
-                setTimeout(() => {
-                    window.location.href = 'auth.html?mode=login';
-                }, 2000);
-                
-                return;
-            }
+            // Cargar idioma
+            loadLanguage();
+            
+            // Configurar botones de autenticación
+            document.getElementById('login-btn').addEventListener('click', () => {
+                window.location.href = 'auth.html?mode=login';
+            });
+            
+            document.getElementById('register-btn').addEventListener('click', () => {
+                window.location.href = 'auth.html?mode=register';
+            });
         });
     
         // Guardar idioma seleccionado
@@ -227,87 +183,39 @@
                     subtitle: 'Controla tus finanzas de manera fácil y segura',
                     languageLabel: 'Selecciona tu idioma:',
                     login: 'Iniciar Sesión',
-                    register: 'Registrarse',
-                    alreadyRegistered: 'Ya tienes una cuenta registrada',
-                    redirecting: 'Redirigiendo a inicio de sesión...'
+                    register: 'Registrarse'
                 },
                 'en': {
                     title: 'My Financial Manager',
                     subtitle: 'Control your finances easily and securely',
                     languageLabel: 'Select your language:',
                     login: 'Login',
-                    register: 'Register',
-                    alreadyRegistered: 'You already have a registered account',
-                    redirecting: 'Redirecting to login...'
+                    register: 'Register'
                 },
                 'pt': {
                     title: 'Meu Gerenciador Financeiro',
                     subtitle: 'Controle suas finanças de forma fácil e segura',
                     languageLabel: 'Selecione seu idioma:',
                     login: 'Entrar',
-                    register: 'Registrar',
-                    alreadyRegistered: 'Você já tem uma conta registrada',
-                    redirecting: 'Redirecionando para login...'
+                    register: 'Registrar'
                 },
                 'fr': {
                     title: 'Mon Gestionnaire Financier',
                     subtitle: 'Contrôlez vos finances facilement et en toute sécurité',
                     languageLabel: 'Sélectionnez votre langue:',
                     login: 'Connexion',
-                    register: 'S\'inscrire',
-                    alreadyRegistered: 'Vous avez déjà un compte enregistré',
-                    redirecting: 'Redirection vers la connexion...'
+                    register: 'S\'inscrire'
                 }
             };
             
             const t = translations[lang] || translations['es'];
             
-            // Actualizar textos solo si existen los elementos
-            const titleElement = document.querySelector('.welcome-title');
-            if (titleElement) titleElement.textContent = t.title;
-            
-            const subtitleElement = document.querySelector('.welcome-subtitle');
-            if (subtitleElement) {
-                // Si el usuario ya está registrado, mostrar mensaje diferente
-                if (localStorage.getItem('user_id')) {
-                    subtitleElement.textContent = t.alreadyRegistered;
-                } else {
-                    subtitleElement.textContent = t.subtitle;
-                }
-            }
-            
-            const languageLabelElement = document.querySelector('.language-label');
-            if (languageLabelElement) languageLabelElement.textContent = t.languageLabel;
-            
-            const loginBtnElement = document.getElementById('login-btn');
-            if (loginBtnElement) loginBtnElement.textContent = t.login;
-            
-            const registerBtnElement = document.getElementById('register-btn');
-            if (registerBtnElement) registerBtnElement.textContent = t.register;
-            
-            const loginRedirectBtnElement = document.getElementById('login-redirect-btn');
-            if (loginRedirectBtnElement) loginRedirectBtnElement.textContent = t.login;
-            
-            // Actualizar el atributo lang del HTML
-            document.documentElement.lang = lang;
-        }
-        
-        // Cargar idioma al iniciar
-        loadLanguage();
-        
-        // Solo configurar estos event listeners si los elementos existen
-        const loginBtn = document.getElementById('login-btn');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', () => {
-                window.location.href = 'auth.html?mode=login';
-            });
-        }
-        
-        const registerBtn = document.getElementById('register-btn');
-        if (registerBtn) {
-            registerBtn.addEventListener('click', () => {
-                window.location.href = 'auth.html?mode=register';
-            });
+            // Actualizar textos
+            document.querySelector('.welcome-title').textContent = t.title;
+            document.querySelector('.welcome-subtitle').textContent = t.subtitle;
+            document.querySelector('.language-label').textContent = t.languageLabel;
+            document.getElementById('login-btn').textContent = t.login;
+            document.getElementById('register-btn').textContent = t.register;
         }
     </script>
 </body>
