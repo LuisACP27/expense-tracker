@@ -148,33 +148,74 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
-            // Obtener traducciones actuales
+            // Obtener traducciones
             const t = window.appLanguage.getTranslations();
             
-            // Actualizar textos de la interfaz
-            document.getElementById('settings-title').textContent = t.settings;
-            document.getElementById('appearance-title').textContent = t.appearance;
-            document.getElementById('theme-label').textContent = t.theme;
-            document.getElementById('language-label').textContent = t.language;
-            document.getElementById('security-title').textContent = t.security;
-            document.getElementById('pin-label').textContent = t.securityPin;
-            document.getElementById('change-security').textContent = t.changeSecurityOptions;
-            document.getElementById('data-title').textContent = t.data;
-            document.getElementById('export-data').textContent = t.exportData;
-            document.getElementById('import-data').textContent = t.importData;
-            document.getElementById('clear-data').textContent = t.deleteData;
-            document.getElementById('account-title').textContent = t.account;
-            document.getElementById('logout-btn').textContent = t.logout;
-            document.getElementById('about-title').textContent = t.about;
+            // Aplicar tema actual
+            window.appTheme.applyCurrentTheme();
             
-            // Actualizar opciones de tema
-            document.getElementById('theme-green').textContent = t.themeGreen;
-            document.getElementById('theme-blue').textContent = t.themeBlue;
-            document.getElementById('theme-purple').textContent = t.themePurple;
-            document.getElementById('theme-red').textContent = t.themeRed;
-            document.getElementById('theme-orange').textContent = t.themeOrange;
-            document.getElementById('theme-gray').textContent = t.themeGray;
-            document.getElementById('theme-dark').textContent = t.themeDark;
+            // Función para actualizar textos de forma segura
+            function safeUpdateText(id, text) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = text;
+                }
+            }
+
+            function safeUpdateQueryText(selector, text) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.textContent = text;
+                }
+            }
+            
+            function updatePageTexts(t) {
+                // Títulos y etiquetas principales
+                safeUpdateText('settings-title', t.settings);
+                safeUpdateText('appearance-title', t.appearance);
+                safeUpdateText('theme-label', t.theme);
+                safeUpdateText('language-label', t.language);
+                safeUpdateText('security-title', t.security);
+                safeUpdateText('pin-label', t.securityPin);
+                safeUpdateText('change-security', t.changeSecurityOptions);
+                safeUpdateText('data-title', t.data);
+                safeUpdateText('export-data', t.exportData);
+                safeUpdateText('import-data', t.importData);
+                safeUpdateText('clear-data', t.deleteData);
+                safeUpdateText('account-title', t.account);
+                safeUpdateText('logout-btn', t.logout);
+                safeUpdateText('about-title', t.about);
+                
+                // Temas
+                safeUpdateText('theme-green', t.themeGreen);
+                safeUpdateText('theme-blue', t.themeBlue);
+                safeUpdateText('theme-purple', t.themePurple);
+                safeUpdateText('theme-red', t.themeRed);
+                safeUpdateText('theme-orange', t.themeOrange);
+                safeUpdateText('theme-gray', t.themeGray);
+                safeUpdateText('theme-dark', t.themeDark);
+                
+                // Menú inferior
+                safeUpdateQueryText('[data-tab="add"] .bottom-nav-text', t.add);
+                safeUpdateQueryText('[data-tab="list"] .bottom-nav-text', t.transactions);
+                safeUpdateQueryText('[data-tab="stats"] .bottom-nav-text', t.statistics);
+                safeUpdateQueryText('.bottom-nav-item.active .bottom-nav-text', t.settings);
+                safeUpdateQueryText('.bottom-nav-item:last-child .bottom-nav-text', t.exit);
+            }
+            
+            // Actualizar textos iniciales
+            updatePageTexts(t);
+            
+            // Escuchar cambios de idioma
+            window.addEventListener('languageChanged', function(e) {
+                const t = window.appLanguage.getTranslations();
+                updatePageTexts(t);
+            });
+
+            // Escuchar cambios de tema
+            window.addEventListener('themeChanged', function(e) {
+                window.appTheme.applyCurrentTheme();
+            });
             
             // Configurar selector de tema
             const themeSelector = document.getElementById('theme-selector');
@@ -195,38 +236,6 @@
                 // No recargar la página, solo actualizar los textos
                 updatePageTexts(t);
             });
-            
-            function updatePageTexts(t) {
-                document.getElementById('settings-title').textContent = t.settings;
-                document.getElementById('appearance-title').textContent = t.appearance;
-                document.getElementById('theme-label').textContent = t.theme;
-                document.getElementById('language-label').textContent = t.language;
-                document.getElementById('security-title').textContent = t.security;
-                document.getElementById('pin-label').textContent = t.securityPin;
-                document.getElementById('change-security').textContent = t.changeSecurityOptions;
-                document.getElementById('data-title').textContent = t.data;
-                document.getElementById('export-data').textContent = t.exportData;
-                document.getElementById('import-data').textContent = t.importData;
-                document.getElementById('clear-data').textContent = t.deleteData;
-                document.getElementById('account-title').textContent = t.account;
-                document.getElementById('logout-btn').textContent = t.logout;
-                document.getElementById('about-title').textContent = t.about;
-                
-                document.getElementById('theme-green').textContent = t.themeGreen;
-                document.getElementById('theme-blue').textContent = t.themeBlue;
-                document.getElementById('theme-purple').textContent = t.themePurple;
-                document.getElementById('theme-red').textContent = t.themeRed;
-                document.getElementById('theme-orange').textContent = t.themeOrange;
-                document.getElementById('theme-gray').textContent = t.themeGray;
-                document.getElementById('theme-dark').textContent = t.themeDark;
-                
-                // Actualizar textos del menú inferior
-                document.querySelector('[data-tab="add"] .bottom-nav-text').textContent = t.add;
-                document.querySelector('[data-tab="list"] .bottom-nav-text').textContent = t.transactions;
-                document.querySelector('[data-tab="stats"] .bottom-nav-text').textContent = t.statistics;
-                document.querySelector('.bottom-nav-item.active .bottom-nav-text').textContent = t.settings;
-                document.querySelector('.bottom-nav-item:last-child .bottom-nav-text').textContent = t.exit;
-            }
             
             // Configurar toggle de PIN
             const pinToggle = document.getElementById('pin-toggle');

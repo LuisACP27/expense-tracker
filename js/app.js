@@ -4,78 +4,6 @@ class ExpenseTracker {
     constructor() {
         this.currentTab = 'add';
         this.init();
-        this.themes = {
-            green: {
-                '--primary-color': '#4CAF50',
-                '--primary-color-rgb': '76, 175, 80',
-                '--secondary-color': '#53C5A8',
-                '--background-color': '#f5f5f5',
-                '--card-background': '#ffffff',
-                '--border-color': '#e0e0e0',
-                '--income-color': '#4CAF50',
-                '--expense-color': '#f44336'
-            },
-            blue: {
-                '--primary-color': '#2196F3',
-                '--primary-color-rgb': '33, 150, 243',
-                '--secondary-color': '#10d1c2',
-                '--background-color': '#e3f2fd',
-                '--card-background': '#ffffff',
-                '--border-color': '#90caf9',
-                '--income-color': '#2196F3',
-                '--expense-color': '#f44336'
-            },
-            dark: {
-                '--primary-color': '#212121',
-                '--primary-color-rgb': '33, 33, 33',
-                '--secondary-color': '#424242',
-                '--background-color': '#121212',
-                '--card-background': '#1e1e1e',
-                '--border-color': '#424242',
-                '--income-color': '#81c784',
-                '--expense-color': '#e57373'
-            },
-            red: {
-                '--primary-color': '#e53935',
-                '--primary-color-rgb': '229, 57, 53',
-                '--secondary-color': '#ff7043',
-                '--background-color': '#fff5f5',
-                '--card-background': '#fff',
-                '--border-color': '#ffcdd2',
-                '--income-color': '#e53935',
-                '--expense-color': '#b71c1c'
-            },
-            purple: {
-                '--primary-color': '#8e24aa',
-                '--primary-color-rgb': '142, 36, 170',
-                '--secondary-color': '#d82ccd',
-                '--background-color': '#f3e5f5',
-                '--card-background': '#fff',
-                '--border-color': '#ce93d8',
-                '--income-color': '#8e24aa',
-                '--expense-color': '#d500f9'
-            },
-            orange: {
-                '--primary-color': '#fb8c00',
-                '--primary-color-rgb': '251, 140, 0',
-                '--secondary-color': '#ffb300',
-                '--background-color': '#fff3e0',
-                '--card-background': '#fff',
-                '--border-color': '#ffe0b2',
-                '--income-color': '#fb8c00',
-                '--expense-color': '#e65100'
-            },
-            gray: {
-                '--primary-color': '#757575',
-                '--primary-color-rgb': '117, 117, 117',
-                '--secondary-color': '#bdbdbd',
-                '--background-color': '#f5f5f5',
-                '--card-background': '#fff',
-                '--border-color': '#e0e0e0',
-                '--income-color': '#757575',
-                '--expense-color': '#bdbdbd'
-            }
-        };
     }
 
     init() {
@@ -98,18 +26,18 @@ class ExpenseTracker {
         // Inicializar gráficos cuando se abra la pestaña de estadísticas
         this.initChartsOnFirstView = true;
 
-        // Cargar tema guardado o por defecto
-        this.loadTheme();
-
         this.setupSwipeGestures();
     }
 
     setupEventListeners() {
         // Formulario de transacción
-        document.getElementById('transaction-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addTransaction();
-        });
+        const form = document.getElementById('transaction-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addTransaction();
+            });
+        }
 
         // Cambio de tipo de transacción
         document.querySelectorAll('input[name="type"]').forEach(radio => {
@@ -117,55 +45,92 @@ class ExpenseTracker {
         });
 
         // Botón para abrir modal de gestión de categorías
-        document.getElementById('manage-categories-btn').addEventListener('click', () => this.openCategoryModal());
+        const manageBtn = document.getElementById('manage-categories-btn');
+        if (manageBtn) {
+            manageBtn.addEventListener('click', () => this.openCategoryModal());
+        }
 
         // Botón para cerrar modal de gestión de categorías
-        document.getElementById('close-category-modal').addEventListener('click', () => this.closeCategoryModal());
+        const closeBtn = document.getElementById('close-category-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeCategoryModal());
+        }
 
         // Botones para agregar categorías
-        document.getElementById('add-income-category-btn').addEventListener('click', () => this.addCategory('income'));
-        document.getElementById('add-expense-category-btn').addEventListener('click', () => this.addCategory('expense'));
+        const addIncomeBtn = document.getElementById('add-income-category-btn');
+        const addExpenseBtn = document.getElementById('add-expense-category-btn');
+        if (addIncomeBtn) {
+            addIncomeBtn.addEventListener('click', () => this.addCategory('income'));
+        }
+        if (addExpenseBtn) {
+            addExpenseBtn.addEventListener('click', () => this.addCategory('expense'));
+        }
 
         // Delegación de eventos para eliminar categorías
-        document.getElementById('income-category-list').addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-category-btn')) {
-                const categoryId = e.target.dataset.id;
-                this.deleteCategory('income', categoryId);
-            }
-        });
-        document.getElementById('expense-category-list').addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-category-btn')) {
-                const categoryId = e.target.dataset.id;
-                this.deleteCategory('expense', categoryId);
-            }
-        });
+        const incomeList = document.getElementById('income-category-list');
+        const expenseList = document.getElementById('expense-category-list');
+        if (incomeList) {
+            incomeList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-category-btn')) {
+                    const categoryId = e.target.dataset.id;
+                    this.deleteCategory('income', categoryId);
+                }
+            });
+        }
+        if (expenseList) {
+            expenseList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-category-btn')) {
+                    const categoryId = e.target.dataset.id;
+                    this.deleteCategory('expense', categoryId);
+                }
+            });
+        }
 
         // Filtros
-        document.getElementById('filter-type').addEventListener('change', () => this.loadTransactions());
-        document.getElementById('filter-month').addEventListener('change', () => this.loadTransactions());
+        const filterType = document.getElementById('filter-type');
+        const filterMonth = document.getElementById('filter-month');
+        if (filterType) {
+            filterType.addEventListener('change', () => this.loadTransactions());
+        }
+        if (filterMonth) {
+            filterMonth.addEventListener('change', () => this.loadTransactions());
+        }
 
         // Delegación de eventos para botones de eliminar transacciones
-        document.getElementById('transactions-list').addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-btn')) {
-                const transactionId = e.target.dataset.id;
-                this.deleteTransaction(transactionId);
-            }
-        });
+        const transactionsList = document.getElementById('transactions-list');
+        if (transactionsList) {
+            transactionsList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const transactionId = e.target.dataset.id;
+                    this.deleteTransaction(transactionId);
+                }
+            });
+        }
 
         // Selector de categoría personalizado
-        document.getElementById('category').addEventListener('focus', (e) => {
-            e.preventDefault();
-            this.openCategoryPicker();
-        });
-        document.getElementById('category').addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            this.openCategoryPicker();
-        });
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) {
+            categorySelect.addEventListener('focus', (e) => {
+                e.preventDefault();
+                this.openCategoryPicker();
+            });
+            categorySelect.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.openCategoryPicker();
+            });
+        }
+
         // Cerrar picker
-        document.getElementById('close-category-picker').addEventListener('click', () => this.closeCategoryPicker());
-        document.getElementById('category-picker-modal').addEventListener('mousedown', (e) => {
-            if (e.target === e.currentTarget) this.closeCategoryPicker();
-        });
+        const closePickerBtn = document.getElementById('close-category-picker');
+        const pickerModal = document.getElementById('category-picker-modal');
+        if (closePickerBtn) {
+            closePickerBtn.addEventListener('click', () => this.closeCategoryPicker());
+        }
+        if (pickerModal) {
+            pickerModal.addEventListener('mousedown', (e) => {
+                if (e.target === e.currentTarget) this.closeCategoryPicker();
+            });
+        }
 
         // Pull to refresh
         this.setupPullToRefresh();
@@ -177,11 +142,6 @@ class ExpenseTracker {
                     e.preventDefault();
                     const tabName = item.dataset.tab;
                     this.switchTab(tabName);
-                    
-                    // Actualizar estado activo en el menú inferior
-                    document.querySelectorAll('.bottom-nav-item').forEach(navItem => {
-                        navItem.classList.toggle('active', navItem.dataset.tab === tabName);
-                    });
                 });
             }
         });
@@ -918,18 +878,6 @@ class ExpenseTracker {
         this.loadTransactions();
         this.updateStats();
         this.showNotification('Datos actualizados', 'success');
-    }
-
-    loadTheme() {
-        const savedTheme = localStorage.getItem('selected_theme') || 'green';
-        const theme = this.themes[savedTheme];
-        if (theme) {
-            Object.entries(theme).forEach(([property, value]) => {
-                document.documentElement.style.setProperty(property, value);
-            });
-            // Aplica el atributo data-theme al body para los estilos CSS específicos
-            document.body.setAttribute('data-theme', savedTheme);
-        }
     }
 
     setupCategoryPickerScroll() {

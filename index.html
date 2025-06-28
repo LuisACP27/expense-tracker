@@ -217,60 +217,76 @@
             
             // Función para actualizar textos
             function updatePageTexts(t) {
+                // Función auxiliar para actualizar texto de forma segura
+                function safeUpdateText(id, text) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = text;
+                    }
+                }
+
+                // Función auxiliar para actualizar placeholder de forma segura
+                function safeUpdatePlaceholder(id, text) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.placeholder = text;
+                    }
+                }
+
                 // Títulos principales
-                document.getElementById('app-title').textContent = t.welcomeTitle;
-                document.getElementById('total-balance-label').textContent = t.totalBalance;
-                document.getElementById('income-label').textContent = t.income;
-                document.getElementById('expense-label').textContent = t.expense;
-                document.getElementById('pull-to-refresh-text').textContent = t.pullToRefresh;
+                safeUpdateText('app-title', t.welcomeTitle);
+                safeUpdateText('total-balance-label', t.totalBalance);
+                safeUpdateText('income-label', t.income);
+                safeUpdateText('expense-label', t.expense);
+                safeUpdateText('pull-to-refresh-text', t.pullToRefresh);
                 
                 // Formulario de transacción
-                document.getElementById('type-label').textContent = t.type;
-                document.getElementById('income-type-label').textContent = t.income;
-                document.getElementById('expense-type-label').textContent = t.expense;
-                document.getElementById('amount-label').textContent = t.amount;
-                document.getElementById('amount').placeholder = t.amountPlaceholder;
-                document.getElementById('category-label').textContent = t.category;
-                document.getElementById('select-category-option').textContent = t.selectCategory;
-                document.getElementById('description-label').textContent = t.description;
-                document.getElementById('description').placeholder = t.descriptionPlaceholder;
-                document.getElementById('date-label').textContent = t.date;
-                document.getElementById('add-transaction-btn').textContent = t.addTransaction;
+                safeUpdateText('type-label', t.type);
+                safeUpdateText('income-type-label', t.income);
+                safeUpdateText('expense-type-label', t.expense);
+                safeUpdateText('amount-label', t.amount);
+                safeUpdatePlaceholder('amount', t.amountPlaceholder);
+                safeUpdateText('category-label', t.category);
+                safeUpdateText('select-category-option', t.selectCategory);
+                safeUpdateText('description-label', t.description);
+                safeUpdatePlaceholder('description', t.descriptionPlaceholder);
+                safeUpdateText('date-label', t.date);
+                safeUpdateText('add-transaction-btn', t.addTransaction);
                 
                 // Gestión de categorías
-                document.getElementById('manage-categories-title').textContent = t.manageCategories;
-                document.getElementById('income-categories-title').textContent = t.incomeCategories;
-                document.getElementById('expense-categories-title').textContent = t.expenseCategories;
-                document.getElementById('new-income-category-name').placeholder = t.newIncomeCategoryPlaceholder;
-                document.getElementById('new-income-category-icon').placeholder = t.iconPlaceholder;
-                document.getElementById('new-expense-category-name').placeholder = t.newExpenseCategoryPlaceholder;
-                document.getElementById('new-expense-category-icon').placeholder = t.iconPlaceholder;
-                document.getElementById('add-income-category-btn').textContent = t.add;
-                document.getElementById('add-expense-category-btn').textContent = t.add;
-                document.getElementById('close-category-modal').textContent = t.close;
+                safeUpdateText('manage-categories-title', t.manageCategories);
+                safeUpdateText('income-categories-title', t.incomeCategories);
+                safeUpdateText('expense-categories-title', t.expenseCategories);
+                safeUpdatePlaceholder('new-income-category-name', t.newIncomeCategoryPlaceholder);
+                safeUpdatePlaceholder('new-income-category-icon', t.iconPlaceholder);
+                safeUpdatePlaceholder('new-expense-category-name', t.newExpenseCategoryPlaceholder);
+                safeUpdatePlaceholder('new-expense-category-icon', t.iconPlaceholder);
+                safeUpdateText('add-income-category-btn', t.add);
+                safeUpdateText('add-expense-category-btn', t.add);
+                safeUpdateText('close-category-modal', t.close);
                 
                 // Filtros de transacciones
-                document.getElementById('filter-all').textContent = t.all;
-                document.getElementById('filter-income').textContent = t.onlyIncome;
-                document.getElementById('filter-expense').textContent = t.onlyExpenses;
-                document.getElementById('filter-all-months').textContent = t.allMonths;
+                safeUpdateText('filter-all', t.all);
+                safeUpdateText('filter-income', t.onlyIncome);
+                safeUpdateText('filter-expense', t.onlyExpenses);
+                safeUpdateText('filter-all-months', t.allMonths);
                 
                 // Estadísticas
-                document.getElementById('expenses-by-category-title').textContent = t.expensesByCategory;
-                document.getElementById('monthly-trend-title').textContent = t.monthlyTrend;
-                document.getElementById('current-month-summary-title').textContent = t.currentMonthSummary;
+                safeUpdateText('expenses-by-category-title', t.expensesByCategory);
+                safeUpdateText('monthly-trend-title', t.monthlyTrend);
+                safeUpdateText('current-month-summary-title', t.currentMonthSummary);
                 
                 // Navegación
-                document.getElementById('nav-add').textContent = t.add;
-                document.getElementById('nav-transactions').textContent = t.transactions;
-                document.getElementById('nav-stats').textContent = t.statistics;
-                document.getElementById('nav-settings').textContent = t.settings;
-                document.getElementById('nav-exit').textContent = t.exit;
+                safeUpdateText('nav-add', t.add);
+                safeUpdateText('nav-transactions', t.transactions);
+                safeUpdateText('nav-stats', t.statistics);
+                safeUpdateText('nav-settings', t.settings);
+                safeUpdateText('nav-exit', t.exit);
                 
                 // Modal de confirmación
-                document.getElementById('confirm-title').textContent = t.confirmAction;
-                document.getElementById('confirm-yes').textContent = t.accept;
-                document.getElementById('confirm-no').textContent = t.cancel;
+                safeUpdateText('confirm-title', t.confirmAction);
+                safeUpdateText('confirm-yes', t.accept);
+                safeUpdateText('confirm-no', t.cancel);
                 
                 // Actualizar título de la página
                 document.title = t.welcomeTitle;
@@ -326,6 +342,9 @@
                     }
                 });
             }
+
+            // Inicializar la aplicación
+            const app = new ExpenseTracker();
         });
     </script>
 </body>
