@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Verificación de Seguridad - Mi Gestor Financiero</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
     <style>
         .pin-container {
             min-height: 100vh;
@@ -157,6 +160,16 @@
             width: 18px;
             height: 18px;
         }
+        .change-account {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .change-account a {
+            color: var(--primary-color, #4CAF50);
+            text-decoration: underline;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -183,6 +196,91 @@
 
     const pinCard = document.getElementById('pin-card');
     
+    // Cargar idioma
+    const userLanguage = localStorage.getItem('user_language') || 'es';
+    
+    // Traducciones
+    const translations = {
+        'es': {
+            welcome: 'Bienvenido de nuevo',
+            enterPin: 'Ingresa tu PIN',
+            enterPinDesc: 'Introduce el PIN de 4 dígitos para acceder',
+            enterPassword: 'Ingresa tu Contraseña',
+            enterPasswordDesc: 'Introduce tu contraseña para acceder',
+            biometricAuth: 'Autenticación Biométrica',
+            biometricDesc: 'Utiliza tu huella digital para acceder',
+            fingerprintButton: 'Autenticar con Huella Digital',
+            accessBtn: 'Acceder',
+            usePin: 'Usar PIN',
+            usePassword: 'Usar Contraseña',
+            useFingerprint: 'Usar Huella',
+            loginGoogle: 'Iniciar sesión con Google',
+            pinError: 'PIN incorrecto. Intenta de nuevo.',
+            passwordError: 'Contraseña incorrecta. Intenta de nuevo.',
+            notYourAccount: '¿No es tu cuenta?'
+        },
+        'en': {
+            welcome: 'Welcome back',
+            enterPin: 'Enter your PIN',
+            enterPinDesc: 'Enter the 4-digit PIN to access',
+            enterPassword: 'Enter your Password',
+            enterPasswordDesc: 'Enter your password to access',
+            biometricAuth: 'Biometric Authentication',
+            biometricDesc: 'Use your fingerprint to access',
+            fingerprintButton: 'Authenticate with Fingerprint',
+            accessBtn: 'Access',
+            usePin: 'Use PIN',
+            usePassword: 'Use Password',
+            useFingerprint: 'Use Fingerprint',
+            loginGoogle: 'Sign in with Google',
+            pinError: 'Incorrect PIN. Try again.',
+            passwordError: 'Incorrect password. Try again.',
+            notYourAccount: 'Not your account?'
+        },
+        'pt': {
+            welcome: 'Bem-vindo de volta',
+            enterPin: 'Digite seu PIN',
+            enterPinDesc: 'Digite o PIN de 4 dígitos para acessar',
+            enterPassword: 'Digite sua Senha',
+            enterPasswordDesc: 'Digite sua senha para acessar',
+            biometricAuth: 'Autenticação Biométrica',
+            biometricDesc: 'Use sua impressão digital para acessar',
+            fingerprintButton: 'Autenticar com Impressão Digital',
+            accessBtn: 'Acessar',
+            usePin: 'Usar PIN',
+            usePassword: 'Usar Senha',
+            useFingerprint: 'Usar Impressão Digital',
+            loginGoogle: 'Entrar com Google',
+            pinError: 'PIN incorreto. Tente novamente.',
+            passwordError: 'Senha incorreta. Tente novamente.',
+            notYourAccount: 'Não é sua conta?'
+        },
+        'fr': {
+            welcome: 'Bon retour',
+            enterPin: 'Entrez votre code PIN',
+            enterPinDesc: 'Entrez le code PIN à 4 chiffres pour accéder',
+            enterPassword: 'Entrez votre mot de passe',
+            enterPasswordDesc: 'Entrez votre mot de passe pour accéder',
+            biometricAuth: 'Authentification Biométrique',
+            biometricDesc: 'Utilisez votre empreinte digitale pour accéder',
+            fingerprintButton: 'Authentifier avec Empreinte Digitale',
+            accessBtn: 'Accéder',
+            usePin: 'Utiliser PIN',
+            usePassword: 'Utiliser Mot de Passe',
+            useFingerprint: 'Utiliser Empreinte',
+            loginGoogle: 'Se connecter avec Google',
+            pinError: 'Code PIN incorrect. Réessayez.',
+            passwordError: 'Mot de passe incorrect. Réessayez.',
+            notYourAccount: 'Ce n\'est pas votre compte?'
+        }
+    };
+    
+    // Obtener traducciones según el idioma
+    const t = translations[userLanguage] || translations['es'];
+    
+    // Establecer idioma del documento
+    document.documentElement.lang = userLanguage;
+    
     // Mostrar interfaz según el tipo de autenticación
     function renderAuthInterface() {
         // Información del usuario
@@ -190,7 +288,7 @@
             <div class="user-info">
                 <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
                 <div>
-                    <p class="user-name">${userName || 'Usuario'}</p>
+                    <p class="user-name">${t.welcome}, ${userName || 'Usuario'}</p>
                     <p class="user-email">${userEmail || ''}</p>
                 </div>
             </div>
@@ -222,55 +320,61 @@
     function renderPinInterface(userInfoHTML) {
         pinCard.innerHTML = `
             ${userInfoHTML}
-            <div class="pin-title">Ingresa tu PIN</div>
-            <div class="pin-desc">Introduce el PIN de 4 dígitos para acceder</div>
+            <div class="pin-title">${t.enterPin}</div>
+            <div class="pin-desc">${t.enterPinDesc}</div>
             <input type="password" maxlength="4" pattern="\\d{4}" class="pin-input" id="enter-pin" autocomplete="off" inputmode="numeric" />
             <br>
-            <button class="pin-btn" id="enter-pin-btn">Acceder</button>
+            <button class="pin-btn" id="enter-pin-btn">${t.accessBtn}</button>
             <div class="pin-error" id="pin-error" style="display:none;"></div>
             ${renderAuthOptions()}
+            ${renderChangeAccount()}
         `;
         
         document.getElementById('enter-pin-btn').addEventListener('click', validatePin);
         document.getElementById('enter-pin').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') validatePin();
         });
+        setupEventListeners();
     }
 
     // Interfaz de contraseña
     function renderPasswordInterface(userInfoHTML) {
         pinCard.innerHTML = `
             ${userInfoHTML}
-            <div class="pin-title">Ingresa tu Contraseña</div>
-            <div class="pin-desc">Introduce tu contraseña para acceder</div>
+            <div class="pin-title">${t.enterPassword}</div>
+            <div class="pin-desc">${t.enterPasswordDesc}</div>
             <input type="password" class="password-input" id="enter-password" autocomplete="off" />
             <br>
-            <button class="pin-btn" id="enter-password-btn">Acceder</button>
+            <button class="pin-btn" id="enter-password-btn">${t.accessBtn}</button>
             <div class="pin-error" id="pin-error" style="display:none;"></div>
             ${renderAuthOptions()}
+            ${renderChangeAccount()}
         `;
         
         document.getElementById('enter-password-btn').addEventListener('click', validatePassword);
         document.getElementById('enter-password').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') validatePassword();
         });
+        setupEventListeners();
     }
 
     // Interfaz biométrica
     function renderBiometricInterface(userInfoHTML) {
         pinCard.innerHTML = `
             ${userInfoHTML}
-            <div class="pin-title">Autenticación Biométrica</div>
-            <div class="pin-desc">Utiliza tu huella digital para acceder</div>
+            <div class="pin-title">${t.biometricAuth}</div>
+            <div class="pin-desc">${t.biometricDesc}</div>
             <div id="fingerprint-button" class="biometric-button">
                 <span class="fingerprint-icon">👆</span>
-                <span>Autenticar con Huella Digital</span>
+                <span>${t.fingerprintButton}</span>
             </div>
             <div class="pin-error" id="pin-error" style="display:none;"></div>
             ${renderAuthOptions()}
+            ${renderChangeAccount()}
         `;
         
         document.getElementById('fingerprint-button').addEventListener('click', authenticateBiometric);
+        setupEventListeners();
     }
 
     // Opciones de autenticación alternativas
@@ -282,15 +386,15 @@
         let optionsHTML = '<div class="auth-options">';
         
         if (authType !== 'pin' && hasPin) {
-            optionsHTML += '<button class="auth-option" id="switch-to-pin">Usar PIN</button>';
+            optionsHTML += `<button class="auth-option" id="switch-to-pin">${t.usePin}</button>`;
         }
         
         if (authType !== 'password' && hasPassword) {
-            optionsHTML += '<button class="auth-option" id="switch-to-password">Usar Contraseña</button>';
+            optionsHTML += `<button class="auth-option" id="switch-to-password">${t.usePassword}</button>`;
         }
         
         if (authType !== 'biometric' && localStorage.getItem('auth_type') === 'biometric') {
-            optionsHTML += '<button class="auth-option" id="switch-to-biometric">Usar Huella</button>';
+            optionsHTML += `<button class="auth-option" id="switch-to-biometric">${t.useFingerprint}</button>`;
         }
         
         optionsHTML += '</div>';
@@ -305,11 +409,20 @@
                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                     <path fill="none" d="M0 0h48v48H0z"/>
                 </svg>
-                Iniciar sesión con Google
+                ${t.loginGoogle}
             </button>
         `;
         
         return optionsHTML;
+    }
+    
+    // Enlace para cambiar de cuenta
+    function renderChangeAccount() {
+        return `
+            <div class="change-account">
+                <a href="#" id="change-account">${t.notYourAccount}</a>
+            </div>
+        `;
     }
 
     // Validar PIN
@@ -321,7 +434,7 @@
             sessionStorage.setItem('pin_ok', '1');
             window.location.href = 'index.html';
         } else {
-            showError('PIN incorrecto. Intenta de nuevo.');
+            showError(t.pinError);
         }
     }
 
@@ -334,7 +447,7 @@
             sessionStorage.setItem('pin_ok', '1');
             window.location.href = 'index.html';
         } else {
-            showError('Contraseña incorrecta. Intenta de nuevo.');
+            showError(t.passwordError);
         }
     }
 
@@ -367,46 +480,14 @@
                 showError('Error al verificar soporte biométrico: ' + err.message);
             });
     }
-
-    // Iniciar sesión con Google
-    function setupGoogleSignIn() {
-        document.getElementById('login-with-google').addEventListener('click', () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    // El usuario ha iniciado sesión correctamente
-                    const user = result.user;
-                    
-                    // Guardar información del usuario en localStorage
-                    localStorage.setItem('user_id', user.uid);
-                    localStorage.setItem('user_email', user.email);
-                    localStorage.setItem('user_name', user.displayName);
-                    localStorage.setItem('user_photo', user.photoURL);
-                    
-                    // Redirigir a la página de opciones de seguridad si es un nuevo usuario
-                    const isNewUser = result.additionalUserInfo.isNewUser;
-                    if (isNewUser) {
-                        window.location.href = 'security-options.html';
-                    } else {
-                        // Si es un usuario existente, permitir acceso directo
-                        sessionStorage.setItem('pin_ok', '1');
-                        window.location.href = 'index.html';
-                    }
-                })
-                .catch((error) => {
-                    showError('Error al iniciar sesión: ' + error.message);
-                });
-        });
-    }
-
-    // Configurar cambios entre métodos de autenticación
-    function setupAuthSwitching() {
+    
+    // Configurar event listeners
+    function setupEventListeners() {
         // Cambiar a PIN
         const switchToPinBtn = document.getElementById('switch-to-pin');
         if (switchToPinBtn) {
             switchToPinBtn.addEventListener('click', () => {
                 renderPinInterface(getUserInfoHTML());
-                setupAuthSwitching();
             });
         }
         
@@ -415,7 +496,6 @@
         if (switchToPasswordBtn) {
             switchToPasswordBtn.addEventListener('click', () => {
                 renderPasswordInterface(getUserInfoHTML());
-                setupAuthSwitching();
             });
         }
         
@@ -424,25 +504,72 @@
         if (switchToBiometricBtn) {
             switchToBiometricBtn.addEventListener('click', () => {
                 renderBiometricInterface(getUserInfoHTML());
-                setupAuthSwitching();
             });
         }
         
-        // Configurar inicio de sesión con Google
-        setupGoogleSignIn();
+        // Iniciar sesión con Google
+        const loginWithGoogleBtn = document.getElementById('login-with-google');
+        if (loginWithGoogleBtn) {
+            loginWithGoogleBtn.addEventListener('click', () => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => {
+                        // El usuario ha iniciado sesión correctamente
+                        const user = result.user;
+                        const isNewUser = result.additionalUserInfo.isNewUser;
+                        
+                        // Guardar información del usuario en localStorage
+                        localStorage.setItem('user_id', user.uid);
+                        localStorage.setItem('user_email', user.email);
+                        localStorage.setItem('user_name', user.displayName);
+                        localStorage.setItem('user_photo', user.photoURL);
+                        
+                        // Redirigir a la página de opciones de seguridad si es un nuevo usuario
+                        if (isNewUser) {
+                            window.location.href = 'security-options.html';
+                        } else {
+                            // Si es un usuario existente, permitir acceso directo
+                            sessionStorage.setItem('pin_ok', '1');
+                            window.location.href = 'index.html';
+                        }
+                    })
+                    .catch((error) => {
+                        showError('Error: ' + error.message);
+                    });
+            });
+        }
+        
+        // Cambiar de cuenta
+        const changeAccountBtn = document.getElementById('change-account');
+        if (changeAccountBtn) {
+            changeAccountBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearUserData();
+            });
+        }
     }
-
+    
     // Obtener HTML de información del usuario
     function getUserInfoHTML() {
         return userId ? `
             <div class="user-info">
                 <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
                 <div>
-                    <p class="user-name">${userName || 'Usuario'}</p>
+                    <p class="user-name">${t.welcome}, ${userName || 'Usuario'}</p>
                     <p class="user-email">${userEmail || ''}</p>
                 </div>
             </div>
         ` : '';
+    }
+    
+    // Limpiar datos de usuario para cambiar de cuenta
+    function clearUserData() {
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('user_name');
+        localStorage.removeItem('user_email');
+        localStorage.removeItem('user_photo');
+        // Mantener el idioma seleccionado
+        window.location.href = 'welcome.html';
     }
 
     // Mostrar mensaje de error
@@ -461,7 +588,6 @@
         window.location.href = 'index.html';
     } else {
         renderAuthInterface();
-        setupAuthSwitching();
     }
     </script>
 </body>

@@ -170,6 +170,17 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
+        // Verificar si ya hay un usuario guardado y tiene método de seguridad configurado
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = localStorage.getItem('user_id');
+            const authType = localStorage.getItem('auth_type');
+            
+            // Si hay un usuario guardado y tiene método de seguridad, redirigir a la página de PIN
+            if (userId && authType) {
+                window.location.href = 'pin.html';
+            }
+        });
+        
         // Determinar si estamos en modo login o register
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode') || 'login';
@@ -199,8 +210,13 @@
                     localStorage.setItem('user_name', user.displayName);
                     localStorage.setItem('user_photo', user.photoURL);
                     
-                    // Redirigir a la página de opciones de seguridad
-                    window.location.href = 'security-options.html';
+                    if (isNewUser) {
+                        // Si es un usuario nuevo, redirigir a opciones de seguridad
+                        window.location.href = 'security-options.html';
+                    } else {
+                        // Si es un usuario existente, redirigir a la página de PIN
+                        window.location.href = 'pin.html';
+                    }
                 })
                 .catch((error) => {
                     // Ocultar indicador de carga
