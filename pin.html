@@ -197,7 +197,22 @@
     const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
     
     // Usar el prefijo para obtener los datos específicos del usuario
-    const authType = localStorage.getItem(`${userPrefix}_auth_type`) || 'pin';
+    let authType = localStorage.getItem(`${userPrefix}_auth_type`);
+    
+    // Si no existe con el nuevo formato, intentar con el formato antiguo
+    if (!authType) {
+        authType = localStorage.getItem('auth_type');
+        if (authType) {
+            // Migrar al nuevo formato
+            console.log("Migrando tipo de autenticación del formato antiguo al nuevo");
+            localStorage.setItem(`${userPrefix}_auth_type`, authType);
+        }
+    }
+    
+    console.log("Usuario:", userName);
+    console.log("ID:", userId);
+    console.log("Prefijo:", userPrefix);
+    console.log("Tipo de autenticación:", authType);
 
     const pinCard = document.getElementById('pin-card');
     
@@ -431,7 +446,17 @@
     function validatePin() {
         const pin = document.getElementById('enter-pin').value.trim();
         // Usar el prefijo correcto para obtener el PIN guardado
-        const savedPin = localStorage.getItem(`${userPrefix}_pin`);
+        let savedPin = localStorage.getItem(`${userPrefix}_pin`);
+        
+        // Si no existe con el nuevo formato, intentar con el formato antiguo
+        if (!savedPin) {
+            savedPin = localStorage.getItem('user_pin');
+            if (savedPin) {
+                // Migrar al nuevo formato
+                console.log("Migrando PIN del formato antiguo al nuevo");
+                localStorage.setItem(`${userPrefix}_pin`, savedPin);
+            }
+        }
         
         console.log("PIN ingresado:", pin);
         console.log("PIN guardado:", savedPin);
@@ -449,7 +474,17 @@
     function validatePassword() {
         const password = document.getElementById('enter-password').value;
         // Usar el prefijo correcto para obtener la contraseña guardada
-        const savedPassword = localStorage.getItem(`${userPrefix}_password`);
+        let savedPassword = localStorage.getItem(`${userPrefix}_password`);
+        
+        // Si no existe con el nuevo formato, intentar con el formato antiguo
+        if (!savedPassword) {
+            savedPassword = localStorage.getItem('user_password');
+            if (savedPassword) {
+                // Migrar al nuevo formato
+                console.log("Migrando contraseña del formato antiguo al nuevo");
+                localStorage.setItem(`${userPrefix}_password`, savedPassword);
+            }
+        }
         
         console.log("Contraseña ingresada:", password ? "***" : "vacía");
         console.log("Contraseña guardada existe:", savedPassword ? "Sí" : "No");
@@ -574,10 +609,26 @@
     }
 
     // Lógica principal
-    const pinEnabled = localStorage.getItem(`${userPrefix}_pin_enabled`) !== 'false'; // Por defecto habilitado
+    let pinEnabled = localStorage.getItem(`${userPrefix}_pin_enabled`);
+    
+    // Si no existe con el nuevo formato, intentar con el formato antiguo
+    if (pinEnabled === null) {
+        pinEnabled = localStorage.getItem('pin_enabled');
+        if (pinEnabled !== null) {
+            // Migrar al nuevo formato
+            console.log("Migrando configuración de PIN habilitado del formato antiguo al nuevo");
+            localStorage.setItem(`${userPrefix}_pin_enabled`, pinEnabled);
+        }
+    }
+    
+    // Por defecto habilitado si no hay configuración
+    pinEnabled = pinEnabled !== 'false';
+    
+    console.log("PIN habilitado:", pinEnabled);
     
     // Si el PIN está deshabilitado, ir directamente a index.html
     if (!pinEnabled) {
+        console.log("PIN deshabilitado, accediendo directamente");
         sessionStorage.setItem('pin_ok', '1');
         window.location.href = 'index.html';
     } else {

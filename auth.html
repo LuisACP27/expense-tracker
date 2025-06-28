@@ -173,11 +173,21 @@
         // Verificar si ya hay un usuario guardado y tiene método de seguridad configurado
         document.addEventListener('DOMContentLoaded', () => {
             const userId = localStorage.getItem('user_id');
-            const authType = localStorage.getItem('auth_type');
             
-            // Si hay un usuario guardado y tiene método de seguridad, redirigir a la página de PIN
-            if (userId && authType) {
-                window.location.href = 'pin.html';
+            if (userId) {
+                // Si ya hay un usuario guardado, verificar si tiene método de seguridad
+                const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+                const authType = localStorage.getItem(`${userPrefix}_auth_type`);
+                
+                console.log("Usuario ya guardado:", userId);
+                console.log("Prefijo:", userPrefix);
+                console.log("Tipo de autenticación:", authType);
+                
+                // Si tiene método de seguridad, redirigir a pin.html
+                if (authType) {
+                    console.log("Redirigiendo a página de verificación");
+                    window.location.href = 'pin.html';
+                }
             }
             
             // Cargar idioma guardado
@@ -304,15 +314,34 @@
                     console.log("Es nuevo usuario:", isNewUser);
                     console.log("Prefijo de usuario:", userPrefix);
                     
-                    // Si es un usuario nuevo, redirigir a opciones de seguridad
-                    if (isNewUser) {
-                        console.log("Redirigiendo a opciones de seguridad (usuario nuevo)");
-                        window.location.href = 'security-options.html';
-                        return;
+                    // Verificar si el usuario ya tiene configurado un método de seguridad
+                    // Primero intentamos con el nuevo formato de clave
+                    let authType = localStorage.getItem(`${userPrefix}_auth_type`);
+                    
+                    // Si no existe, verificamos con el formato antiguo por compatibilidad
+                    if (!authType && !isNewUser) {
+                        const oldAuthType = localStorage.getItem('auth_type');
+                        if (oldAuthType) {
+                            // Migrar del formato antiguo al nuevo
+                            console.log("Migrando configuración antigua a nuevo formato");
+                            localStorage.setItem(`${userPrefix}_auth_type`, oldAuthType);
+                            
+                            // Migrar PIN si existe
+                            const oldPin = localStorage.getItem('user_pin');
+                            if (oldPin) {
+                                localStorage.setItem(`${userPrefix}_pin`, oldPin);
+                            }
+                            
+                            // Migrar contraseña si existe
+                            const oldPassword = localStorage.getItem('user_password');
+                            if (oldPassword) {
+                                localStorage.setItem(`${userPrefix}_password`, oldPassword);
+                            }
+                            
+                            authType = oldAuthType;
+                        }
                     }
                     
-                    // Verificar si el usuario ya tiene configurado un método de seguridad
-                    const authType = localStorage.getItem(`${userPrefix}_auth_type`);
                     console.log("Tipo de autenticación configurado:", authType);
                     
                     if (authType) {

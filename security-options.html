@@ -308,6 +308,9 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
+        // Variable global para el prefijo del usuario
+        let userPrefix = '';
+        
         // Cargar información del usuario
         document.addEventListener('DOMContentLoaded', () => {
             const userId = localStorage.getItem('user_id');
@@ -316,8 +319,12 @@
             const userPhoto = localStorage.getItem('user_photo');
             
             // Obtener o crear el prefijo único para este usuario
-            const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+            userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
             localStorage.setItem('current_user_prefix', userPrefix);
+            
+            console.log("Usuario cargado:", userName);
+            console.log("ID de usuario:", userId);
+            console.log("Prefijo de usuario:", userPrefix);
             
             // Verificar si el usuario ya tiene configuración de seguridad
             const hasSecurityConfig = localStorage.getItem(`${userPrefix}_auth_type`);
@@ -627,10 +634,13 @@
         
         // Configurar sin seguridad adicional
         function setupNoSecurity() {
+            console.log("Configurando sin seguridad adicional");
+            console.log("Prefijo de usuario:", userPrefix);
+            
             // Deshabilitar PIN y otras opciones de seguridad
             localStorage.setItem(`${userPrefix}_pin_enabled`, 'false');
-            localStorage.removeItem(`${userPrefix}_user_pin`);
-            localStorage.removeItem(`${userPrefix}_user_password`);
+            localStorage.removeItem(`${userPrefix}_pin`);
+            localStorage.removeItem(`${userPrefix}_password`);
             localStorage.setItem(`${userPrefix}_auth_type`, 'none');
             
             // Redirigir directamente a la aplicación
