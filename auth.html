@@ -296,12 +296,24 @@
                     localStorage.setItem('user_name', user.displayName);
                     localStorage.setItem('user_photo', user.photoURL);
                     
+                    // Crear un prefijo único para este usuario para almacenar sus datos
+                    const userPrefix = `user_${user.uid}`;
+                    localStorage.setItem('current_user_prefix', userPrefix);
+                    
                     if (isNewUser) {
                         // Si es un usuario nuevo, redirigir a opciones de seguridad
                         window.location.href = 'security-options.html';
                     } else {
-                        // Si es un usuario existente, redirigir a la página de PIN
-                        window.location.href = 'pin.html';
+                        // Verificar si el usuario ya tiene configurado un método de seguridad
+                        const authType = localStorage.getItem(`${userPrefix}_auth_type`);
+                        
+                        if (authType) {
+                            // Si ya tiene configurado un método de seguridad, redirigir a la página de PIN
+                            window.location.href = 'pin.html';
+                        } else {
+                            // Si no tiene configurado un método de seguridad, redirigir a opciones de seguridad
+                            window.location.href = 'security-options.html';
+                        }
                     }
                 })
                 .catch((error) => {

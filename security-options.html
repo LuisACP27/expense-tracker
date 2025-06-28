@@ -315,8 +315,12 @@
             const userEmail = localStorage.getItem('user_email');
             const userPhoto = localStorage.getItem('user_photo');
             
+            // Obtener o crear el prefijo único para este usuario
+            const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+            localStorage.setItem('current_user_prefix', userPrefix);
+            
             // Verificar si el usuario ya tiene configuración de seguridad
-            const hasSecurityConfig = localStorage.getItem('auth_type');
+            const hasSecurityConfig = localStorage.getItem(`${userPrefix}_auth_type`);
             
             // Si ya tiene configuración y no es un usuario nuevo, redirigir a pin.html
             if (hasSecurityConfig && hasSecurityConfig !== 'none') {
@@ -523,9 +527,9 @@
             }
             
             // Guardar PIN
-            localStorage.setItem('pin_enabled', 'true');
-            localStorage.setItem('user_pin', pin);
-            localStorage.setItem('auth_type', 'pin');
+            localStorage.setItem(`${userPrefix}_pin_enabled`, 'true');
+            localStorage.setItem(`${userPrefix}_user_pin`, pin);
+            localStorage.setItem(`${userPrefix}_auth_type`, 'pin');
             
             // Mostrar mensaje de éxito y botón para continuar
             errorElement.textContent = '';
@@ -553,9 +557,9 @@
             }
             
             // Guardar contraseña
-            localStorage.setItem('pin_enabled', 'true'); // Reutilizamos el mismo flag
-            localStorage.setItem('user_password', password);
-            localStorage.setItem('auth_type', 'password');
+            localStorage.setItem(`${userPrefix}_pin_enabled`, 'true'); // Reutilizamos el mismo flag
+            localStorage.setItem(`${userPrefix}_user_password`, password);
+            localStorage.setItem(`${userPrefix}_auth_type`, 'password');
             
             // Mostrar mensaje de éxito y botón para continuar
             errorElement.textContent = '';
@@ -603,8 +607,8 @@
         // Guardar configuración biométrica
         function saveBiometric() {
             // Guardar preferencia de autenticación biométrica
-            localStorage.setItem('pin_enabled', 'true'); // Reutilizamos el mismo flag
-            localStorage.setItem('auth_type', 'biometric');
+            localStorage.setItem(`${userPrefix}_pin_enabled`, 'true'); // Reutilizamos el mismo flag
+            localStorage.setItem(`${userPrefix}_auth_type`, 'biometric');
             
             // Mostrar botón para continuar
             document.getElementById('btn-continue').style.display = 'block';
@@ -613,10 +617,10 @@
         // Configurar sin seguridad adicional
         function setupNoSecurity() {
             // Deshabilitar PIN y otras opciones de seguridad
-            localStorage.setItem('pin_enabled', 'false');
-            localStorage.removeItem('user_pin');
-            localStorage.removeItem('user_password');
-            localStorage.setItem('auth_type', 'none');
+            localStorage.setItem(`${userPrefix}_pin_enabled`, 'false');
+            localStorage.removeItem(`${userPrefix}_user_pin`);
+            localStorage.removeItem(`${userPrefix}_user_password`);
+            localStorage.setItem(`${userPrefix}_auth_type`, 'none');
             
             // Redirigir directamente a la aplicación
             continueToApp();
