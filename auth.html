@@ -8,6 +8,8 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
+    <script src="js/language.js"></script>
+    <script src="js/themes.js"></script>
     <style>
         .auth-container {
             display: flex;
@@ -172,6 +174,12 @@
     <script>
         // Verificar si ya hay un usuario guardado y tiene método de seguridad
         document.addEventListener('DOMContentLoaded', () => {
+            // Obtener traducciones
+            const t = window.appLanguage.getTranslations();
+            
+            // Aplicar tema actual
+            window.appTheme.applyCurrentTheme();
+            
             // Obtener el modo de la URL (login o register)
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode') || 'register';
@@ -181,11 +189,11 @@
             const googleButton = document.getElementById('google-signin');
             
             if (mode === 'login') {
-                titleElement.textContent = 'Iniciar Sesión';
-                googleButton.textContent = 'Continuar con Google';
+                titleElement.textContent = t.login;
+                googleButton.textContent = t.continueWithGoogle || 'Continuar con Google';
             } else {
-                titleElement.textContent = 'Registrarse';
-                googleButton.textContent = 'Registrarse con Google';
+                titleElement.textContent = t.register;
+                googleButton.textContent = t.registerWithGoogle || 'Registrarse con Google';
             }
             
             // Configurar el botón de Google
@@ -206,6 +214,9 @@
                         // Crear un prefijo único para este usuario para almacenar sus datos
                         const userPrefix = `user_${user.uid}`;
                         localStorage.setItem('current_user_prefix', userPrefix);
+                        
+                        // Aplicar el idioma temporal si existe
+                        window.appLanguage.applyTempLanguage(userPrefix);
                         
                         console.log("Usuario:", user.displayName);
                         console.log("Es nuevo usuario:", isNewUser);
@@ -253,7 +264,9 @@
                     })
                     .catch((error) => {
                         console.error("Error de autenticación:", error);
-                        alert("Error al autenticar: " + error.message);
+                        const errorContainer = document.getElementById('error-container');
+                        errorContainer.textContent = t.authError || 'Error de autenticación';
+                        errorContainer.style.display = 'block';
                     });
             });
         });

@@ -198,7 +198,11 @@ function getCurrentLanguage() {
         const userPrefix = localStorage.getItem('current_user_prefix');
         return localStorage.getItem(`${userPrefix}_language`) || 'es';
     }
-    // Si no hay usuario, usar español por defecto
+    // Si no hay usuario pero hay un idioma temporal en la sesión, usarlo
+    if (sessionStorage.getItem('temp_language')) {
+        return sessionStorage.getItem('temp_language');
+    }
+    // Si no hay usuario ni idioma temporal, usar español por defecto
     return 'es';
 }
 
@@ -208,6 +212,9 @@ function changeLanguage(lang) {
     if (localStorage.getItem('user_id')) {
         const userPrefix = localStorage.getItem('current_user_prefix');
         localStorage.setItem(`${userPrefix}_language`, lang);
+    } else {
+        // Si no hay usuario, guardar el idioma temporalmente en la sesión
+        sessionStorage.setItem('temp_language', lang);
     }
     
     // Actualizar el idioma del documento
@@ -215,6 +222,20 @@ function changeLanguage(lang) {
     
     // Retornar las traducciones del idioma seleccionado
     return translations[lang] || translations['es'];
+}
+
+// Función para aplicar el idioma temporal al usuario después del login
+function applyTempLanguage(userPrefix) {
+    const tempLang = sessionStorage.getItem('temp_language');
+    if (tempLang) {
+        localStorage.setItem(`${userPrefix}_language`, tempLang);
+        sessionStorage.removeItem('temp_language');
+    }
+}
+
+// Función para limpiar el idioma temporal al cerrar sesión
+function clearTempLanguage() {
+    sessionStorage.removeItem('temp_language');
 }
 
 // Función para obtener las traducciones del idioma actual
@@ -228,5 +249,7 @@ window.appLanguage = {
     translations,
     getCurrentLanguage,
     changeLanguage,
-    getTranslations
+    getTranslations,
+    applyTempLanguage,
+    clearTempLanguage
 }; 

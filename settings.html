@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <script src="js/language.js"></script>
+    <script src="js/themes.js"></script>
     <script>
       // Verificar si el PIN está habilitado y si se ha ingresado correctamente
       const pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // Por defecto habilitado
@@ -29,10 +30,10 @@
         </header>
 
         <!-- Contenido de Ajustes -->
-        <div class="settings-page">
-            <div class="settings-section">
+            <div class="settings-page">
+                    <div class="settings-section">
                 <h3 id="appearance-title">Apariencia</h3>
-                <div class="form-group">
+                        <div class="form-group">
                     <label for="theme-selector" id="theme-label">Tema</label>
                     <select id="theme-selector">
                         <option value="green" id="theme-green">Verde (Predeterminado)</option>
@@ -42,17 +43,17 @@
                         <option value="orange" id="theme-orange">Naranja</option>
                         <option value="gray" id="theme-gray">Gris</option>
                         <option value="dark" id="theme-dark">Modo Oscuro</option>
-                    </select>
-                </div>
+                            </select>
+                        </div>
                 <div class="form-group">
                     <label for="language-selector" id="language-label">Idioma</label>
                     <select id="language-selector">
                         <option value="es">Español</option>
-                        <option value="en">English</option>
+                                <option value="en">English</option>
                         <option value="fr">Français</option>
-                        <option value="pt">Português</option>
-                    </select>
-                </div>
+                                <option value="pt">Português</option>
+                            </select>
+                        </div>
             </div>
             
             <div class="settings-section">
@@ -60,44 +61,44 @@
                 <div class="form-group">
                     <div class="night-mode-group">
                         <span id="pin-label">PIN de seguridad</span>
-                        <label class="switch">
+                            <label class="switch">
                             <input type="checkbox" id="pin-toggle">
                             <span class="slider"></span>
-                        </label>
+                            </label>
                     </div>
                     <button id="change-security" class="btn btn-secondary">Cambiar opciones de seguridad</button>
                 </div>
-            </div>
+                    </div>
 
-            <div class="settings-section">
+                    <div class="settings-section">
                 <h3 id="data-title">Datos</h3>
                 <div class="settings-actions">
                     <button id="export-data" class="btn btn-secondary">Exportar datos</button>
                     <button id="import-data" class="btn btn-secondary">Importar datos</button>
                     <button id="clear-data" class="btn btn-danger">Eliminar todos los datos</button>
                     <input type="file" id="import-file" style="display: none;" accept=".json">
-                </div>
-            </div>
+                        </div>
+                    </div>
 
-            <div class="settings-section">
+                    <div class="settings-section">
                 <h3 id="account-title">Cuenta</h3>
                 <div id="user-account-info" class="user-info">
                     <!-- La información del usuario se cargará aquí dinámicamente -->
-                </div>
-                <div class="settings-actions">
+                        </div>
+                        <div class="settings-actions">
                     <button id="logout-btn" class="btn btn-danger">Cerrar sesión</button>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
-            <div class="settings-section">
+                    <div class="settings-section">
                 <h3 id="about-title">Acerca de</h3>
                 <div class="app-info">
                     <p><strong>Mi Gestor Financiero</strong></p>
                     <p>Versión 1.0.0</p>
                     <p>Una aplicación para gestionar tus finanzas personales</p>
-                </div>
             </div>
         </div>
+    </div>
 
         <!-- Custom Confirmation Modal -->
         <div id="confirm-modal" class="modal hidden">
@@ -108,7 +109,7 @@
                     <button id="confirm-yes" class="btn btn-primary">Aceptar</button>
                     <button id="confirm-no" class="btn btn-secondary">Cancelar</button>
                 </div>
-            </div>
+                </div>
         </div>
         
         <!-- Menú de navegación inferior -->
@@ -177,9 +178,10 @@
             
             // Configurar selector de tema
             const themeSelector = document.getElementById('theme-selector');
+            themeSelector.value = window.appTheme.getCurrentTheme();
+            
             themeSelector.addEventListener('change', function() {
-                localStorage.setItem('app_theme', this.value);
-                location.reload();
+                window.appTheme.changeTheme(this.value);
             });
             
             // Configurar selector de idioma
@@ -190,8 +192,41 @@
                 const newLang = this.value;
                 const t = window.appLanguage.changeLanguage(newLang);
                 showNotification(t.languageChanged);
-                location.reload();
+                // No recargar la página, solo actualizar los textos
+                updatePageTexts(t);
             });
+            
+            function updatePageTexts(t) {
+                document.getElementById('settings-title').textContent = t.settings;
+                document.getElementById('appearance-title').textContent = t.appearance;
+                document.getElementById('theme-label').textContent = t.theme;
+                document.getElementById('language-label').textContent = t.language;
+                document.getElementById('security-title').textContent = t.security;
+                document.getElementById('pin-label').textContent = t.securityPin;
+                document.getElementById('change-security').textContent = t.changeSecurityOptions;
+                document.getElementById('data-title').textContent = t.data;
+                document.getElementById('export-data').textContent = t.exportData;
+                document.getElementById('import-data').textContent = t.importData;
+                document.getElementById('clear-data').textContent = t.deleteData;
+                document.getElementById('account-title').textContent = t.account;
+                document.getElementById('logout-btn').textContent = t.logout;
+                document.getElementById('about-title').textContent = t.about;
+                
+                document.getElementById('theme-green').textContent = t.themeGreen;
+                document.getElementById('theme-blue').textContent = t.themeBlue;
+                document.getElementById('theme-purple').textContent = t.themePurple;
+                document.getElementById('theme-red').textContent = t.themeRed;
+                document.getElementById('theme-orange').textContent = t.themeOrange;
+                document.getElementById('theme-gray').textContent = t.themeGray;
+                document.getElementById('theme-dark').textContent = t.themeDark;
+                
+                // Actualizar textos del menú inferior
+                document.querySelector('[data-tab="add"] .bottom-nav-text').textContent = t.add;
+                document.querySelector('[data-tab="list"] .bottom-nav-text').textContent = t.transactions;
+                document.querySelector('[data-tab="stats"] .bottom-nav-text').textContent = t.statistics;
+                document.querySelector('.bottom-nav-item.active .bottom-nav-text').textContent = t.settings;
+                document.querySelector('.bottom-nav-item:last-child .bottom-nav-text').textContent = t.exit;
+            }
             
             // Configurar toggle de PIN
             const pinToggle = document.getElementById('pin-toggle');
@@ -249,43 +284,23 @@
                 });
             });
             
-            // Configurar botón de cierre de sesión
+            // Configurar botón de cerrar sesión
             document.getElementById('logout-btn').addEventListener('click', function() {
                 showConfirmDialog(t.confirmLogout, function() {
-                    // Obtener el prefijo del usuario actual
-                    const userId = localStorage.getItem('user_id');
-                    const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
-                    
-                    // Guardar temporalmente los datos de autenticación
-                    const authData = {
-                        pin: localStorage.getItem(`${userPrefix}_pin`),
-                        password: localStorage.getItem(`${userPrefix}_password`),
-                        authType: localStorage.getItem(`${userPrefix}_auth_type`),
-                        pinEnabled: localStorage.getItem(`${userPrefix}_pin_enabled`)
-                    };
-                    
-                    // Limpiar datos de sesión
-                    sessionStorage.clear();
-                    
-                    // Limpiar datos de usuario actual
+                    // Limpiar datos de usuario
                     localStorage.removeItem('user_id');
-                    localStorage.removeItem('user_name');
                     localStorage.removeItem('user_email');
+                    localStorage.removeItem('user_name');
                     localStorage.removeItem('user_photo');
                     localStorage.removeItem('current_user_prefix');
                     
-                    // Restaurar datos de autenticación para futuro inicio de sesión
-                    if (authData.authType) {
-                        localStorage.setItem(`${userPrefix}_pin`, authData.pin);
-                        localStorage.setItem(`${userPrefix}_password`, authData.password);
-                        localStorage.setItem(`${userPrefix}_auth_type`, authData.authType);
-                        localStorage.setItem(`${userPrefix}_pin_enabled`, authData.pinEnabled);
-                    }
+                    // Limpiar idioma temporal
+                    window.appLanguage.clearTempLanguage();
                     
-                    console.log("Sesión cerrada. Datos de autenticación preservados para:", userPrefix);
-                    
-                    // Redirigir a la página de bienvenida
-                    window.location.href = 'welcome.html';
+                    // Cerrar sesión de Firebase
+                    firebase.auth().signOut().then(() => {
+                        window.location.href = 'welcome.html';
+                    });
                 });
             });
             

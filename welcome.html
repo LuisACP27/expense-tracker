@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <script src="js/language.js"></script>
+    <script src="js/themes.js"></script>
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
@@ -139,12 +140,21 @@
             // Cargar idioma por defecto (español)
             const t = window.appLanguage.changeLanguage('es');
             
-            // Actualizar textos de la interfaz
-            document.querySelector('.welcome-title').textContent = t.welcomeTitle;
-            document.querySelector('.welcome-subtitle').textContent = t.welcomeSubtitle;
-            document.querySelector('.language-label').textContent = t.selectLanguage;
-            document.getElementById('login-btn').textContent = t.login;
-            document.getElementById('register-btn').textContent = t.register;
+            // Aplicar tema por defecto
+            window.appTheme.applyCurrentTheme();
+            
+            // Función para actualizar textos
+            function updatePageTexts(t) {
+                document.querySelector('.welcome-title').textContent = t.welcomeTitle;
+                document.querySelector('.welcome-subtitle').textContent = t.welcomeSubtitle;
+                document.querySelector('.language-label').textContent = t.selectLanguage;
+                document.getElementById('login-btn').textContent = t.login;
+                document.getElementById('register-btn').textContent = t.register;
+                document.title = t.welcomeTitle;
+            }
+            
+            // Actualizar textos iniciales
+            updatePageTexts(t);
             
             // Configurar selector de idioma
             const languageSelector = document.getElementById('language');
@@ -154,12 +164,11 @@
                 const newLang = this.value;
                 const t = window.appLanguage.changeLanguage(newLang);
                 
+                // Guardar el idioma seleccionado para la sesión actual
+                sessionStorage.setItem('temp_language', newLang);
+                
                 // Actualizar textos
-                document.querySelector('.welcome-title').textContent = t.welcomeTitle;
-                document.querySelector('.welcome-subtitle').textContent = t.welcomeSubtitle;
-                document.querySelector('.language-label').textContent = t.selectLanguage;
-                document.getElementById('login-btn').textContent = t.login;
-                document.getElementById('register-btn').textContent = t.register;
+                updatePageTexts(t);
             });
             
             // Configurar botones de autenticación
