@@ -299,24 +299,35 @@
             </div>
         ` : '';
         
+        console.log("Renderizando interfaz de autenticación");
+        console.log("Tipo de autenticación:", authType);
+        console.log("Prefijo de usuario:", userPrefix);
+        console.log("PIN guardado:", localStorage.getItem(`${userPrefix}_pin`));
+        console.log("Contraseña guardada:", localStorage.getItem(`${userPrefix}_password`) ? "Existe" : "No existe");
+        
         // Renderizar interfaz según tipo de autenticación
         switch(authType) {
             case 'pin':
+                console.log("Mostrando interfaz de PIN");
                 renderPinInterface(userInfoHTML);
                 break;
             case 'password':
+                console.log("Mostrando interfaz de contraseña");
                 renderPasswordInterface(userInfoHTML);
                 break;
             case 'biometric':
+                console.log("Mostrando interfaz biométrica");
                 renderBiometricInterface(userInfoHTML);
                 break;
             case 'none':
                 // Sin seguridad adicional, redirigir directamente
+                console.log("Sin seguridad adicional, redirigiendo directamente");
                 sessionStorage.setItem('pin_ok', '1');
                 window.location.href = 'index.html';
                 break;
             default:
                 // Por defecto, mostrar PIN
+                console.log("Tipo de autenticación no reconocido, mostrando PIN por defecto");
                 renderPinInterface(userInfoHTML);
         }
     }
@@ -419,7 +430,12 @@
     // Validar PIN
     function validatePin() {
         const pin = document.getElementById('enter-pin').value.trim();
+        // Usar el prefijo correcto para obtener el PIN guardado
         const savedPin = localStorage.getItem(`${userPrefix}_pin`);
+        
+        console.log("PIN ingresado:", pin);
+        console.log("PIN guardado:", savedPin);
+        console.log("Prefijo de usuario:", userPrefix);
         
         if (pin === savedPin) {
             sessionStorage.setItem('pin_ok', '1');
@@ -432,7 +448,12 @@
     // Validar contraseña
     function validatePassword() {
         const password = document.getElementById('enter-password').value;
+        // Usar el prefijo correcto para obtener la contraseña guardada
         const savedPassword = localStorage.getItem(`${userPrefix}_password`);
+        
+        console.log("Contraseña ingresada:", password ? "***" : "vacía");
+        console.log("Contraseña guardada existe:", savedPassword ? "Sí" : "No");
+        console.log("Prefijo de usuario:", userPrefix);
         
         if (password === savedPassword) {
             sessionStorage.setItem('pin_ok', '1');

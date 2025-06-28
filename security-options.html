@@ -526,10 +526,16 @@
                 return;
             }
             
-            // Guardar PIN
+            console.log("Guardando PIN:", pin);
+            console.log("Prefijo de usuario:", userPrefix);
+            
+            // Guardar PIN con el prefijo correcto
             localStorage.setItem(`${userPrefix}_pin_enabled`, 'true');
-            localStorage.setItem(`${userPrefix}_user_pin`, pin);
             localStorage.setItem(`${userPrefix}_auth_type`, 'pin');
+            localStorage.setItem(`${userPrefix}_pin`, pin);
+            
+            console.log("PIN guardado:", localStorage.getItem(`${userPrefix}_pin`));
+            console.log("Auth type guardado:", localStorage.getItem(`${userPrefix}_auth_type`));
             
             // Mostrar mensaje de éxito y botón para continuar
             errorElement.textContent = '';
@@ -556,10 +562,15 @@
                 return;
             }
             
-            // Guardar contraseña
+            console.log("Guardando contraseña");
+            console.log("Prefijo de usuario:", userPrefix);
+            
+            // Guardar contraseña con el prefijo correcto
             localStorage.setItem(`${userPrefix}_pin_enabled`, 'true'); // Reutilizamos el mismo flag
-            localStorage.setItem(`${userPrefix}_user_password`, password);
             localStorage.setItem(`${userPrefix}_auth_type`, 'password');
+            localStorage.setItem(`${userPrefix}_password`, password);
+            
+            console.log("Auth type guardado:", localStorage.getItem(`${userPrefix}_auth_type`));
             
             // Mostrar mensaje de éxito y botón para continuar
             errorElement.textContent = '';

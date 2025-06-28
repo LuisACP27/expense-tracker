@@ -140,23 +140,54 @@
             if (userId) {
                 // El usuario ya está registrado, mostrar mensaje y redirigir
                 const welcomeCard = document.querySelector('.welcome-card');
+                const currentLanguage = localStorage.getItem('app_language') || 'es';
+                const translations = {
+                    'es': {
+                        title: 'Mi Gestor Financiero',
+                        alreadyRegistered: 'Ya tienes una cuenta registrada',
+                        login: 'Iniciar Sesión',
+                        redirecting: 'Redirigiendo a inicio de sesión...'
+                    },
+                    'en': {
+                        title: 'My Financial Manager',
+                        alreadyRegistered: 'You already have a registered account',
+                        login: 'Login',
+                        redirecting: 'Redirecting to login...'
+                    },
+                    'pt': {
+                        title: 'Meu Gerenciador Financeiro',
+                        alreadyRegistered: 'Você já tem uma conta registrada',
+                        login: 'Entrar',
+                        redirecting: 'Redirecionando para login...'
+                    },
+                    'fr': {
+                        title: 'Mon Gestionnaire Financier',
+                        alreadyRegistered: 'Vous avez déjà un compte enregistré',
+                        login: 'Connexion',
+                        redirecting: 'Redirection vers la connexion...'
+                    }
+                };
+                
+                const t = translations[currentLanguage] || translations['es'];
+                
                 welcomeCard.innerHTML = `
                     <div class="app-logo">💰</div>
-                    <h1 class="welcome-title">Mi Gestor Financiero</h1>
-                    <p class="welcome-subtitle">Ya tienes una cuenta registrada</p>
+                    <h1 class="welcome-title">${t.title}</h1>
+                    <p class="welcome-subtitle">${t.alreadyRegistered}</p>
                     <div class="auth-buttons">
-                        <button class="btn-auth btn-login" id="login-redirect-btn">Iniciar Sesión</button>
+                        <button class="btn-auth btn-login" id="login-redirect-btn">${t.login}</button>
                     </div>
+                    <p class="redirecting-text" style="margin-top: 20px; color: #666;">${t.redirecting}</p>
                 `;
                 
                 document.getElementById('login-redirect-btn').addEventListener('click', () => {
                     window.location.href = 'auth.html?mode=login';
                 });
                 
-                // Redirigir automáticamente después de 3 segundos
+                // Redirigir automáticamente después de 2 segundos
                 setTimeout(() => {
                     window.location.href = 'auth.html?mode=login';
-                }, 3000);
+                }, 2000);
                 
                 return;
             }

@@ -300,20 +300,29 @@
                     const userPrefix = `user_${user.uid}`;
                     localStorage.setItem('current_user_prefix', userPrefix);
                     
+                    console.log("Usuario:", user.displayName);
+                    console.log("Es nuevo usuario:", isNewUser);
+                    console.log("Prefijo de usuario:", userPrefix);
+                    
+                    // Si es un usuario nuevo, redirigir a opciones de seguridad
                     if (isNewUser) {
-                        // Si es un usuario nuevo, redirigir a opciones de seguridad
+                        console.log("Redirigiendo a opciones de seguridad (usuario nuevo)");
                         window.location.href = 'security-options.html';
+                        return;
+                    }
+                    
+                    // Verificar si el usuario ya tiene configurado un método de seguridad
+                    const authType = localStorage.getItem(`${userPrefix}_auth_type`);
+                    console.log("Tipo de autenticación configurado:", authType);
+                    
+                    if (authType) {
+                        // Si ya tiene configurado un método de seguridad, redirigir a la página de PIN
+                        console.log("Redirigiendo a página de PIN/contraseña");
+                        window.location.href = 'pin.html';
                     } else {
-                        // Verificar si el usuario ya tiene configurado un método de seguridad
-                        const authType = localStorage.getItem(`${userPrefix}_auth_type`);
-                        
-                        if (authType) {
-                            // Si ya tiene configurado un método de seguridad, redirigir a la página de PIN
-                            window.location.href = 'pin.html';
-                        } else {
-                            // Si no tiene configurado un método de seguridad, redirigir a opciones de seguridad
-                            window.location.href = 'security-options.html';
-                        }
+                        // Si no tiene configurado un método de seguridad, redirigir a opciones de seguridad
+                        console.log("Redirigiendo a opciones de seguridad (sin método configurado)");
+                        window.location.href = 'security-options.html';
                     }
                 })
                 .catch((error) => {
