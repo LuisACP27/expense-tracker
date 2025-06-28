@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Opciones de Seguridad - Mi Gestor Financiero</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <style>
+        .security-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color-light, #81c784), var(--primary-color, #4CAF50));
+        }
+        
+        .security-card {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .security-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--primary-color, #4CAF50);
+        }
+        
+        .security-subtitle {
+            font-size: 1rem;
+            margin-bottom: 25px;
+            color: #666;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid var(--primary-color, #4CAF50);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        
+        .user-email {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .security-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        .security-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #eee;
+        }
+        
+        .security-option:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .security-option-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .security-option-text {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .security-option-title {
+            font-weight: 600;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .security-option-description {
+            color: #666;
+            margin: 5px 0 0 0;
+            font-size: 0.85rem;
+        }
+        
+        .btn-continue {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #pin-setup, #password-setup, #biometric-setup {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .setup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .pin-input {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .pin-digit {
+            width: 40px;
+            height: 50px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .password-input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .biometric-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 15px 0;
+        }
+        
+        .fingerprint-icon {
+            font-size: 2rem;
+        }
+        
+        .error-message {
+            color: #f44336;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .success-message {
+            color: var(--primary-color, #4CAF50);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="security-container">
+        <div class="security-card">
+            <h1 class="security-title">Opciones de Seguridad</h1>
+            <p class="security-subtitle">Elige cómo quieres proteger tu cuenta</p>
+            
+            <div class="user-info">
+                <img id="user-avatar" src="https://via.placeholder.com/50" alt="Avatar" class="user-avatar">
+                <div>
+                    <p id="user-name" class="user-name">Nombre de Usuario</p>
+                    <p id="user-email" class="user-email">usuario@ejemplo.com</p>
+                </div>
+            </div>
+            
+            <div class="security-options">
+                <div class="security-option" id="option-pin">
+                    <div class="security-option-icon">🔢</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">PIN</h3>
+                        <p class="security-option-description">Configura un código PIN de 4 dígitos para acceder rápidamente</p>
+                    </div>
+                </div>
+                
+                <div class="security-option" id="option-password">
+                    <div class="security-option-icon">🔐</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">Contraseña</h3>
+                        <p class="security-option-description">Establece una contraseña personalizada</p>
+                    </div>
+                </div>
+                
+                <div class="security-option" id="option-biometric">
+                    <div class="security-option-icon">👆</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">Huella Digital</h3>
+                        <p class="security-option-description">Usa tu huella digital para un acceso más seguro</p>
+                    </div>
+                </div>
+                
+                <div class="security-option" id="option-none">
+                    <div class="security-option-icon">🚫</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">Sin Seguridad Adicional</h3>
+                        <p class="security-option-description">Accede directamente sin verificación adicional</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Configuración de PIN -->
+            <div id="pin-setup">
+                <h3>Configura tu PIN</h3>
+                <div class="setup-form">
+                    <p>Ingresa un código PIN de 4 dígitos:</p>
+                    <div class="pin-input">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="0">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="1">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="2">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="3">
+                    </div>
+                    <p>Confirma tu PIN:</p>
+                    <div class="pin-input">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="0">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="1">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="2">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="3">
+                    </div>
+                    <p id="pin-error" class="error-message"></p>
+                    <button id="save-pin" class="btn-continue">Guardar PIN</button>
+                </div>
+            </div>
+            
+            <!-- Configuración de Contraseña -->
+            <div id="password-setup">
+                <h3>Configura tu Contraseña</h3>
+                <div class="setup-form">
+                    <input type="password" id="password" class="password-input" placeholder="Ingresa tu contraseña">
+                    <input type="password" id="confirm-password" class="password-input" placeholder="Confirma tu contraseña">
+                    <p id="password-error" class="error-message"></p>
+                    <button id="save-password" class="btn-continue">Guardar Contraseña</button>
+                </div>
+            </div>
+            
+            <!-- Configuración de Biometría -->
+            <div id="biometric-setup">
+                <h3>Configura tu Huella Digital</h3>
+                <div class="setup-form">
+                    <p>Toca el botón para registrar tu huella digital:</p>
+                    <div id="fingerprint-button" class="biometric-button">
+                        <span class="fingerprint-icon">👆</span>
+                        <span>Registrar Huella Digital</span>
+                    </div>
+                    <p id="biometric-status"></p>
+                    <p id="biometric-error" class="error-message"></p>
+                    <button id="save-biometric" class="btn-continue" disabled>Continuar</button>
+                </div>
+            </div>
+            
+            <button id="btn-continue" class="btn-continue" style="display: none;">Continuar a la Aplicación</button>
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        // Cargar información del usuario
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = localStorage.getItem('user_name');
+            const userEmail = localStorage.getItem('user_email');
+            const userPhoto = localStorage.getItem('user_photo');
+            
+            if (userName) document.getElementById('user-name').textContent = userName;
+            if (userEmail) document.getElementById('user-email').textContent = userEmail;
+            if (userPhoto) document.getElementById('user-avatar').src = userPhoto;
+            
+            // Configurar event listeners para las opciones de seguridad
+            document.getElementById('option-pin').addEventListener('click', () => showSetupForm('pin'));
+            document.getElementById('option-password').addEventListener('click', () => showSetupForm('password'));
+            document.getElementById('option-biometric').addEventListener('click', () => showSetupForm('biometric'));
+            document.getElementById('option-none').addEventListener('click', () => setupNoSecurity());
+            
+            // Configurar event listeners para los formularios
+            document.getElementById('save-pin').addEventListener('click', savePin);
+            document.getElementById('save-password').addEventListener('click', savePassword);
+            document.getElementById('fingerprint-button').addEventListener('click', setupBiometric);
+            document.getElementById('save-biometric').addEventListener('click', saveBiometric);
+            document.getElementById('btn-continue').addEventListener('click', continueToApp);
+            
+            // Configurar inputs de PIN para saltar al siguiente
+            setupPinInputs();
+        });
+        
+        // Mostrar formulario de configuración seleccionado
+        function showSetupForm(type) {
+            // Ocultar todos los formularios
+            document.getElementById('pin-setup').style.display = 'none';
+            document.getElementById('password-setup').style.display = 'none';
+            document.getElementById('biometric-setup').style.display = 'none';
+            document.getElementById('btn-continue').style.display = 'none';
+            
+            // Mostrar el formulario seleccionado
+            document.getElementById(`${type}-setup`).style.display = 'block';
+            
+            // Resaltar opción seleccionada
+            document.querySelectorAll('.security-option').forEach(option => {
+                option.style.borderColor = '#eee';
+                option.style.backgroundColor = '#f9f9f9';
+            });
+            document.getElementById(`option-${type}`).style.borderColor = 'var(--primary-color, #4CAF50)';
+            document.getElementById(`option-${type}`).style.backgroundColor = '#f0f7f0';
+        }
+        
+        // Configurar inputs de PIN para saltar al siguiente
+        function setupPinInputs() {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinDigitsConfirm = document.querySelectorAll('.pin-digit-confirm');
+            
+            // Configurar inputs de PIN original
+            pinDigits.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1) {
+                        if (index < pinDigits.length - 1) {
+                            pinDigits[index + 1].focus();
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value.length === 0) {
+                        if (index > 0) {
+                            pinDigits[index - 1].focus();
+                        }
+                    }
+                });
+            });
+            
+            // Configurar inputs de confirmación de PIN
+            pinDigitsConfirm.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1) {
+                        if (index < pinDigitsConfirm.length - 1) {
+                            pinDigitsConfirm[index + 1].focus();
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value.length === 0) {
+                        if (index > 0) {
+                            pinDigitsConfirm[index - 1].focus();
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Guardar PIN
+        function savePin() {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinDigitsConfirm = document.querySelectorAll('.pin-digit-confirm');
+            const errorElement = document.getElementById('pin-error');
+            
+            // Obtener valores de PIN
+            let pin = '';
+            let pinConfirm = '';
+            
+            pinDigits.forEach(input => pin += input.value);
+            pinDigitsConfirm.forEach(input => pinConfirm += input.value);
+            
+            // Validar PIN
+            if (pin.length !== 4) {
+                errorElement.textContent = 'El PIN debe tener 4 dígitos';
+                return;
+            }
+            
+            if (pin !== pinConfirm) {
+                errorElement.textContent = 'Los PINs no coinciden';
+                return;
+            }
+            
+            // Guardar PIN
+            localStorage.setItem('pin_enabled', 'true');
+            localStorage.setItem('user_pin', pin);
+            localStorage.setItem('auth_type', 'pin');
+            
+            // Mostrar mensaje de éxito y botón para continuar
+            errorElement.textContent = '';
+            errorElement.className = 'success-message';
+            errorElement.textContent = 'PIN configurado correctamente';
+            
+            document.getElementById('btn-continue').style.display = 'block';
+        }
+        
+        // Guardar contraseña
+        function savePassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorElement = document.getElementById('password-error');
+            
+            // Validar contraseña
+            if (password.length < 6) {
+                errorElement.textContent = 'La contraseña debe tener al menos 6 caracteres';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                errorElement.textContent = 'Las contraseñas no coinciden';
+                return;
+            }
+            
+            // Guardar contraseña
+            localStorage.setItem('pin_enabled', 'true'); // Reutilizamos el mismo flag
+            localStorage.setItem('user_password', password);
+            localStorage.setItem('auth_type', 'password');
+            
+            // Mostrar mensaje de éxito y botón para continuar
+            errorElement.textContent = '';
+            errorElement.className = 'success-message';
+            errorElement.textContent = 'Contraseña configurada correctamente';
+            
+            document.getElementById('btn-continue').style.display = 'block';
+        }
+        
+        // Configurar biometría
+        function setupBiometric() {
+            const statusElement = document.getElementById('biometric-status');
+            const errorElement = document.getElementById('biometric-error');
+            const saveButton = document.getElementById('save-biometric');
+            
+            // Verificar si la API Web Authentication está disponible
+            if (!window.PublicKeyCredential) {
+                errorElement.textContent = 'Tu dispositivo no soporta autenticación biométrica';
+                return;
+            }
+            
+            // Verificar si el dispositivo soporta autenticación biométrica
+            PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+                .then(available => {
+                    if (!available) {
+                        errorElement.textContent = 'Tu dispositivo no tiene sensor de huellas configurado';
+                        return;
+                    }
+                    
+                    // Aquí iría la lógica para registrar la huella digital
+                    // Este es un ejemplo simplificado, en una implementación real
+                    // se usaría la API Web Authentication completa
+                    
+                    statusElement.className = 'success-message';
+                    statusElement.textContent = 'Huella registrada correctamente';
+                    
+                    // Habilitar botón de guardar
+                    saveButton.disabled = false;
+                })
+                .catch(err => {
+                    errorElement.textContent = 'Error al verificar soporte biométrico: ' + err.message;
+                });
+        }
+        
+        // Guardar configuración biométrica
+        function saveBiometric() {
+            // Guardar preferencia de autenticación biométrica
+            localStorage.setItem('pin_enabled', 'true'); // Reutilizamos el mismo flag
+            localStorage.setItem('auth_type', 'biometric');
+            
+            // Mostrar botón para continuar
+            document.getElementById('btn-continue').style.display = 'block';
+        }
+        
+        // Configurar sin seguridad adicional
+        function setupNoSecurity() {
+            // Deshabilitar PIN y otras opciones de seguridad
+            localStorage.setItem('pin_enabled', 'false');
+            localStorage.removeItem('user_pin');
+            localStorage.removeItem('user_password');
+            localStorage.setItem('auth_type', 'none');
+            
+            // Redirigir directamente a la aplicación
+            continueToApp();
+        }
+        
+        // Continuar a la aplicación
+        function continueToApp() {
+            // Establecer flag de sesión
+            sessionStorage.setItem('pin_ok', '1');
+            
+            // Redirigir a la aplicación principal
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html> 

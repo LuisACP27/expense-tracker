@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestor de Gastos e Ingresos</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <script>
+      // Verificar si el PIN está habilitado y si se ha ingresado correctamente
+      const pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // Por defecto habilitado
+      const pinOk = sessionStorage.getItem('pin_ok') === '1';
+      
+      // Solo redirigir a pin.html si el PIN está habilitado y no se ha ingresado
+      if (pinEnabled && !pinOk && !window.location.pathname.endsWith('pin.html')) {
+        window.location.href = 'pin.html';
+      }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>💰 Mi Gestor Financiero</h1>
+            <div class="balance-card">
+                <h2>Balance Total</h2>
+                <p class="balance" id="balance">$0.00</p>
+                <div class="balance-details">
+                    <div class="income-box">
+                        <span>Ingresos</span>
+                        <p id="total-income">$0.00</p>
+                    </div>
+                    <div class="expense-box">
+                        <span>Gastos</span>
+                        <p id="total-expense">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Pull to Refresh -->
+        <div class="pull-to-refresh">
+            <span class="arrow">↓</span>
+            <span class="spinner"></span>
+            <span class="text">Desliza para actualizar</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="add">Agregar</button>
+            <button class="tab-btn" data-tab="list">Transacciones</button>
+            <button class="tab-btn" data-tab="stats">Estadísticas</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Add Transaction Tab -->
+            <div id="add-tab" class="tab-pane active">
+                <form id="transaction-form">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <div class="type-selector">
+                            <input type="radio" id="income" name="type" value="income" checked />
+                            <label for="income" class="type-label income-label">Ingreso</label>
+                            <input type="radio" id="expense" name="type" value="expense" />
+                            <label for="expense" class="type-label expense-label">Gasto</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Cantidad</label>
+                        <input type="number" id="amount" step="0.01" required placeholder="0.00" />
+                    </div>
+
+                    <div class="form-group category-group">
+                        <label for="category">Categoría</label>
+                        <select id="category" required>
+                            <option value="">Selecciona una categoría</option>
+                            <!-- Categories will be dynamically inserted here -->
+                        </select>
+                        <button type="button" id="manage-categories-btn" class="btn btn-secondary small-btn" title="Gestionar Categorías">⚙️</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <input type="text" id="description" placeholder="Descripción opcional" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Fecha</label>
+                        <input type="date" id="date" required />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Agregar Transacción</button>
+                </form>
+
+                <!-- Category Management Modal -->
+                <div id="category-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>Gestionar Categorías</h3>
+                        <div class="category-management">
+                            <div class="category-list">
+                                <h4>Ingresos</h4>
+                                <ul id="income-category-list" class="category-list-ul"></ul>
+                                <div class="add-category-form">
+                                    <input type="text" id="new-income-category-name" placeholder="Nueva categoría de ingreso" />
+                                    <input type="text" id="new-income-category-icon" placeholder="Icono (ej. 💰)" maxlength="2" />
+                                    <button id="add-income-category-btn" class="btn btn-secondary small-btn">Agregar</button>
+                                </div>
+                            </div>
+                            <div class="category-list">
+                                <h4>Gastos</h4>
+                                <ul id="expense-category-list" class="category-list-ul"></ul>
+                                <div class="add-category-form">
+                                    <input type="text" id="new-expense-category-name" placeholder="Nueva categoría de gasto" />
+                                    <input type="text" id="new-expense-category-icon" placeholder="Icono (ej. 🍔)" maxlength="2" />
+                                    <button id="add-expense-category-btn" class="btn btn-secondary small-btn">Agregar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="close-category-modal" class="btn btn-primary small-btn">Cerrar</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Custom Confirmation Modal -->
+            <div id="confirm-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>Confirmar acción</h3>
+                    <p id="confirm-message">¿Estás seguro?</p>
+                    <div class="modal-buttons">
+                        <button id="confirm-yes" class="btn btn-primary">Aceptar</button>
+                        <button id="confirm-no" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions List Tab -->
+            <div id="list-tab" class="tab-pane">
+                <div class="filter-section">
+                    <select id="filter-type">
+                        <option value="all">Todas</option>
+                        <option value="income">Solo Ingresos</option>
+                        <option value="expense">Solo Gastos</option>
+                    </select>
+                    <select id="filter-month">
+                        <option value="all">Todos los meses</option>
+                    </select>
+                </div>
+                <div id="transactions-list" class="transactions-list">
+                    <!-- Las transacciones se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="stats-tab" class="tab-pane">
+                <div class="stats-container">
+                    <div class="chart-container">
+                        <h3>Gastos por Categoría</h3>
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Tendencia Mensual</h3>
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                    <div class="summary-section">
+                        <h3>Resumen del Mes Actual</h3>
+                        <div id="monthly-summary">
+                            <!-- El resumen se cargará aquí dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menú de navegación inferior -->
+        <nav class="bottom-nav">
+            <a href="#" class="bottom-nav-item active" data-tab="add">
+                <div class="bottom-nav-icon">➕</div>
+                <div class="bottom-nav-text">Agregar</div>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="list">
+                <div class="bottom-nav-icon">📋</div>
+                <div class="bottom-nav-text">Transacciones</div>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="stats">
+                <div class="bottom-nav-icon">📊</div>
+                <div class="bottom-nav-text">Estadísticas</div>
+            </a>
+            <a href="settings.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">⚙️</div>
+                <div class="bottom-nav-text">Ajustes</div>
+            </a>
+            <a href="welcome.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">🚪</div>
+                <div class="bottom-nav-text">Salir</div>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registrado'))
+                .catch(err => console.log('Error al registrar Service Worker:', err));
+        }
+        
+        // Aplicar tema y modo nocturno guardados
+        (function() {
+            const themes = {
+                green: {
+                    '--primary-color': '#4CAF50',
+                    '--primary-color-rgb': '76, 175, 80',
+                    '--secondary-color': '#53C5A8',
+                    '--background-color': '#f5f5f5',
+                    '--card-background': '#ffffff',
+                    '--border-color': '#e0e0e0',
+                    '--income-color': '#4CAF50',
+                    '--expense-color': '#f44336'
+                },
+                blue: {
+                    '--primary-color': '#2196F3',
+                    '--primary-color-rgb': '33, 150, 243',
+                    '--secondary-color': '#10d1c2',
+                    '--background-color': '#e3f2fd',
+                    '--card-background': '#ffffff',
+                    '--border-color': '#90caf9',
+                    '--income-color': '#2196F3',
+                    '--expense-color': '#f44336'
+                },
+                dark: {
+                    '--primary-color': '#212121',
+                    '--primary-color-rgb': '33, 33, 33',
+                    '--secondary-color': '#424242',
+                    '--background-color': '#121212',
+                    '--card-background': '#1e1e1e',
+                    '--border-color': '#424242',
+                    '--income-color': '#81c784',
+                    '--expense-color': '#e57373'
+                },
+                red: {
+                    '--primary-color': '#e53935',
+                    '--primary-color-rgb': '229, 57, 53',
+                    '--secondary-color': '#ff7043',
+                    '--background-color': '#fff5f5',
+                    '--card-background': '#fff',
+                    '--border-color': '#ffcdd2',
+                    '--income-color': '#e53935',
+                    '--expense-color': '#b71c1c'
+                },
+                purple: {
+                    '--primary-color': '#8e24aa',
+                    '--primary-color-rgb': '142, 36, 170',
+                    '--secondary-color': '#d82ccd',
+                    '--background-color': '#f3e5f5',
+                    '--card-background': '#fff',
+                    '--border-color': '#ce93d8',
+                    '--income-color': '#8e24aa',
+                    '--expense-color': '#d500f9'
+                },
+                orange: {
+                    '--primary-color': '#fb8c00',
+                    '--primary-color-rgb': '251, 140, 0',
+                    '--secondary-color': '#ffb300',
+                    '--background-color': '#fff3e0',
+                    '--card-background': '#fff',
+                    '--border-color': '#ffe0b2',
+                    '--income-color': '#fb8c00',
+                    '--expense-color': '#e65100'
+                },
+                gray: {
+                    '--primary-color': '#757575',
+                    '--primary-color-rgb': '117, 117, 117',
+                    '--secondary-color': '#bdbdbd',
+                    '--background-color': '#f5f5f5',
+                    '--card-background': '#fff',
+                    '--border-color': '#e0e0e0',
+                    '--income-color': '#757575',
+                    '--expense-color': '#bdbdbd'
+                }
+            };
+            
+            const savedTheme = localStorage.getItem('app_theme') || 'green';
+            const themeColors = themes[savedTheme];
+            
+            if (themeColors) {
+                Object.keys(themeColors).forEach(key => {
+                    document.documentElement.style.setProperty(key, themeColors[key]);
+                });
+                
+                if (savedTheme === 'dark') {
+                document.body.classList.add('night-mode');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#212121');
+            } else {
+                document.body.classList.remove('night-mode');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColors['--primary-color']);
+                }
+            }
+        })();
+        
+        // Configurar navegación con el menú inferior
+        document.addEventListener('DOMContentLoaded', function() {
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            
+            // Sincronizar menú inferior con pestañas existentes
+            document.querySelectorAll('.tab-btn').forEach(tabBtn => {
+                tabBtn.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    updateBottomNav(tabName);
+                });
+            });
+            
+            // Configurar eventos de clic para el menú inferior
+            bottomNavItems.forEach(item => {
+                if (item.dataset.tab) {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const tabName = this.dataset.tab;
+                        
+                        // Activar la pestaña correspondiente
+                        const tabButton = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+                        if (tabButton) {
+                            tabButton.click();
+                        }
+                        
+                        // Actualizar menú inferior
+                        updateBottomNav(tabName);
+                    });
+                }
+            });
+            
+            // Función para actualizar el menú inferior
+            function updateBottomNav(tabName) {
+                bottomNavItems.forEach(navItem => {
+                    if (navItem.dataset.tab === tabName) {
+                        navItem.classList.add('active');
+                    } else {
+                        navItem.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

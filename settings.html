@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ajustes - Mi Gestor Financiero</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <script>
+      // Verificar si el PIN está habilitado y si se ha ingresado correctamente
+      const pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // Por defecto habilitado
+      const pinOk = sessionStorage.getItem('pin_ok') === '1';
+      
+      // Solo redirigir a pin.html si el PIN está habilitado y no se ha ingresado
+      if (pinEnabled && !pinOk && !window.location.pathname.endsWith('pin.html')) {
+        window.location.href = 'pin.html';
+      }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="index.html" class="back-btn" title="Volver" aria-label="Volver">←</a>
+            <h1>Ajustes</h1>
+        </header>
+
+        <!-- Contenido de Ajustes -->
+            <div class="settings-page">
+                    <div class="settings-section">
+                        <h3>Apariencia</h3>
+                        <div class="form-group">
+                    <label for="theme-selector">Tema</label>
+                    <select id="theme-selector">
+                        <option value="green">Verde (Predeterminado)</option>
+                                <option value="blue">Azul</option>
+                        <option value="purple">Púrpura</option>
+                                <option value="red">Rojo</option>
+                                <option value="orange">Naranja</option>
+                                <option value="gray">Gris</option>
+                        <option value="dark">Modo Oscuro</option>
+                            </select>
+                        </div>
+                        </div>
+            
+            <div class="settings-section">
+                <h3>Seguridad</h3>
+                <div class="form-group">
+                    <div class="night-mode-group">
+                        <span>PIN de seguridad</span>
+                            <label class="switch">
+                            <input type="checkbox" id="pin-toggle">
+                            <span class="slider"></span>
+                            </label>
+                    </div>
+                    <button id="change-security" class="btn btn-secondary">Cambiar opciones de seguridad</button>
+                </div>
+                    </div>
+
+                    <div class="settings-section">
+                <h3>Datos</h3>
+                <div class="settings-actions">
+                    <button id="export-data" class="btn btn-secondary">Exportar datos</button>
+                    <button id="import-data" class="btn btn-secondary">Importar datos</button>
+                    <button id="clear-data" class="btn btn-danger">Eliminar todos los datos</button>
+                    <input type="file" id="import-file" style="display: none;" accept=".json">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                <h3>Cuenta</h3>
+                <div id="user-account-info" class="user-info">
+                    <!-- La información del usuario se cargará aquí dinámicamente -->
+                        </div>
+                        <div class="settings-actions">
+                    <button id="logout-btn" class="btn btn-danger">Cerrar sesión</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                <h3>Acerca de</h3>
+                <div class="app-info">
+                    <p><strong>Mi Gestor Financiero</strong></p>
+                    <p>Versión 1.0.0</p>
+                    <p>Una aplicación para gestionar tus finanzas personales</p>
+            </div>
+        </div>
+    </div>
+
+        <!-- Custom Confirmation Modal -->
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Confirmar acción</h3>
+                <p id="confirm-message">¿Estás seguro?</p>
+                <div class="modal-buttons">
+                    <button id="confirm-yes" class="btn btn-primary">Aceptar</button>
+                    <button id="confirm-no" class="btn btn-secondary">Cancelar</button>
+                </div>
+                </div>
+        </div>
+        
+        <!-- Menú de navegación inferior -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="bottom-nav-item" data-tab="add">
+                <div class="bottom-nav-icon">➕</div>
+                <div class="bottom-nav-text">Agregar</div>
+            </a>
+            <a href="index.html#list" class="bottom-nav-item" data-tab="list">
+                <div class="bottom-nav-icon">📋</div>
+                <div class="bottom-nav-text">Transacciones</div>
+            </a>
+            <a href="index.html#stats" class="bottom-nav-item" data-tab="stats">
+                <div class="bottom-nav-icon">📊</div>
+                <div class="bottom-nav-text">Estadísticas</div>
+            </a>
+            <a href="settings.html" class="bottom-nav-item active">
+                <div class="bottom-nav-icon">⚙️</div>
+                <div class="bottom-nav-text">Ajustes</div>
+            </a>
+            <a href="welcome.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">🚪</div>
+                <div class="bottom-nav-text">Salir</div>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registrado'))
+                .catch(err => console.log('Error al registrar Service Worker:', err));
+        }
+        
+        // Aplicar tema guardado
+        (function() {
+            const themes = {
+                green: {
+                    '--primary-color': '#4CAF50',
+                    '--primary-color-rgb': '76, 175, 80',
+                    '--secondary-color': '#53C5A8',
+                    '--background-color': '#f5f5f5',
+                    '--card-background': '#ffffff',
+                    '--border-color': '#e0e0e0',
+                    '--income-color': '#4CAF50',
+                    '--expense-color': '#f44336'
+                },
+                blue: {
+                    '--primary-color': '#2196F3',
+                    '--primary-color-rgb': '33, 150, 243',
+                    '--secondary-color': '#10d1c2',
+                    '--background-color': '#e3f2fd',
+                    '--card-background': '#ffffff',
+                    '--border-color': '#90caf9',
+                    '--income-color': '#2196F3',
+                    '--expense-color': '#f44336'
+                },
+                dark: {
+                    '--primary-color': '#212121',
+                    '--primary-color-rgb': '33, 33, 33',
+                    '--secondary-color': '#424242',
+                    '--background-color': '#121212',
+                    '--card-background': '#1e1e1e',
+                    '--border-color': '#424242',
+                    '--income-color': '#81c784',
+                    '--expense-color': '#e57373'
+                },
+                red: {
+                    '--primary-color': '#e53935',
+                    '--primary-color-rgb': '229, 57, 53',
+                    '--secondary-color': '#ff7043',
+                    '--background-color': '#fff5f5',
+                    '--card-background': '#fff',
+                    '--border-color': '#ffcdd2',
+                    '--income-color': '#e53935',
+                    '--expense-color': '#b71c1c'
+                },
+                purple: {
+                    '--primary-color': '#8e24aa',
+                    '--primary-color-rgb': '142, 36, 170',
+                    '--secondary-color': '#d82ccd',
+                    '--background-color': '#f3e5f5',
+                    '--card-background': '#fff',
+                    '--border-color': '#ce93d8',
+                    '--income-color': '#8e24aa',
+                    '--expense-color': '#d500f9'
+                },
+                orange: {
+                    '--primary-color': '#fb8c00',
+                    '--primary-color-rgb': '251, 140, 0',
+                    '--secondary-color': '#ffb300',
+                    '--background-color': '#fff3e0',
+                    '--card-background': '#fff',
+                    '--border-color': '#ffe0b2',
+                    '--income-color': '#fb8c00',
+                    '--expense-color': '#e65100'
+                },
+                gray: {
+                    '--primary-color': '#757575',
+                    '--primary-color-rgb': '117, 117, 117',
+                    '--secondary-color': '#bdbdbd',
+                    '--background-color': '#f5f5f5',
+                    '--card-background': '#fff',
+                    '--border-color': '#e0e0e0',
+                    '--income-color': '#757575',
+                    '--expense-color': '#bdbdbd'
+                }
+            };
+            
+            const savedTheme = localStorage.getItem('app_theme') || 'green';
+            const themeColors = themes[savedTheme];
+            
+            if (themeColors) {
+                Object.keys(themeColors).forEach(key => {
+                    document.documentElement.style.setProperty(key, themeColors[key]);
+                });
+                
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('night-mode');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#212121');
+                } else {
+                    document.body.classList.remove('night-mode');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColors['--primary-color']);
+                }
+                
+                // Actualizar selector de tema
+                document.getElementById('theme-selector').value = savedTheme;
+            }
+        })();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar selector de tema
+            const themeSelector = document.getElementById('theme-selector');
+            themeSelector.addEventListener('change', function() {
+                localStorage.setItem('app_theme', this.value);
+                location.reload();
+            });
+            
+            // Configurar toggle de PIN
+            const pinToggle = document.getElementById('pin-toggle');
+            const pinEnabled = localStorage.getItem('pin_enabled') !== 'false';
+            pinToggle.checked = pinEnabled;
+            
+            pinToggle.addEventListener('change', function() {
+                localStorage.setItem('pin_enabled', this.checked);
+                showNotification(this.checked ? 'PIN habilitado' : 'PIN deshabilitado');
+            });
+            
+            // Configurar botón de cambio de seguridad
+            document.getElementById('change-security').addEventListener('click', function() {
+                window.location.href = 'security-options.html';
+            });
+            
+            // Configurar botón de exportar datos
+            document.getElementById('export-data').addEventListener('click', function() {
+                const storage = new Storage();
+                storage.exportData();
+                showNotification('Datos exportados correctamente');
+            });
+            
+            // Configurar botón de importar datos
+            const importBtn = document.getElementById('import-data');
+            const importFile = document.getElementById('import-file');
+            
+            importBtn.addEventListener('click', function() {
+                importFile.click();
+            });
+            
+            importFile.addEventListener('change', function(e) {
+                if (e.target.files.length === 0) return;
+                
+                const file = e.target.files[0];
+                const storage = new Storage();
+                
+                storage.importData(file)
+                    .then(() => {
+                        showNotification('Datos importados correctamente');
+                        e.target.value = '';
+                    })
+                    .catch(error => {
+                        showNotification('Error al importar datos: ' + error, 'error');
+                        e.target.value = '';
+                    });
+            });
+            
+            // Configurar botón de eliminar datos
+            document.getElementById('clear-data').addEventListener('click', function() {
+                showConfirmDialog('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.', function() {
+                    const storage = new Storage();
+                    storage.clearAllData();
+                    showNotification('Todos los datos han sido eliminados');
+                });
+            });
+            
+            // Configurar botón de cierre de sesión
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                showConfirmDialog('¿Estás seguro de que quieres cerrar sesión?', function() {
+                    // Limpiar datos de sesión
+                    sessionStorage.removeItem('pin_ok');
+                    
+                    // Redirigir a la página de bienvenida
+                    window.location.href = 'welcome.html';
+                });
+            });
+            
+            // Mostrar información de usuario
+            const userAccountInfo = document.getElementById('user-account-info');
+            const userId = localStorage.getItem('user_id');
+            const userName = localStorage.getItem('user_name');
+            const userEmail = localStorage.getItem('user_email');
+            const userPhoto = localStorage.getItem('user_photo');
+            
+            if (userId) {
+                userAccountInfo.innerHTML = `
+                    <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
+                    <div>
+                        <p class="user-name">${userName || 'Usuario'}</p>
+                        <p class="user-email">${userEmail || ''}</p>
+                    </div>
+                `;
+            } else {
+                userAccountInfo.innerHTML = `
+                    <p>No has iniciado sesión con una cuenta.</p>
+                `;
+            }
+        });
+        
+        // Función para mostrar diálogo de confirmación
+        function showConfirmDialog(message, onConfirm) {
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmMessage = document.getElementById('confirm-message');
+            const confirmYes = document.getElementById('confirm-yes');
+            const confirmNo = document.getElementById('confirm-no');
+            
+            confirmMessage.textContent = message;
+            confirmModal.classList.remove('hidden');
+            
+            confirmYes.onclick = function() {
+                confirmModal.classList.add('hidden');
+                if (typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+            };
+            
+            confirmNo.onclick = function() {
+                confirmModal.classList.add('hidden');
+            };
+        }
+        
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'success') {
+            // Eliminar notificaciones existentes
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => {
+                notification.remove();
+            });
+            
+            // Crear nueva notificación
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            
+            // Agregar al DOM
+            document.body.appendChild(notification);
+            
+            // Eliminar después de 3 segundos
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

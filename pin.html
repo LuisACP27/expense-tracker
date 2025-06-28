@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verificación de Seguridad - Mi Gestor Financiero</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        .pin-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color-light, #81c784), var(--primary-color, #4CAF50));
+        }
+        .pin-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 2.5rem 2rem;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+        }
+        .pin-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color, #4CAF50);
+        }
+        .pin-desc {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        .pin-input {
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            padding: 0.5rem 1rem;
+            width: 8rem;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .password-input {
+            font-size: 1.2rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            text-align: left;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+        }
+        .pin-btn {
+            background: var(--primary-color, #4CAF50);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .pin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .pin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .pin-error {
+            color: #e53935;
+            margin-bottom: 1rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid var(--primary-color, #4CAF50);
+        }
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        .user-email {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .biometric-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 15px 0;
+            transition: all 0.2s ease;
+        }
+        .biometric-button:hover {
+            background-color: #e0e0e0;
+        }
+        .fingerprint-icon {
+            font-size: 2rem;
+        }
+        .auth-options {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .auth-option {
+            background: none;
+            border: none;
+            color: var(--primary-color, #4CAF50);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+        .login-with-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            background-color: #fff;
+            color: #757575;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .login-with-google:hover {
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .google-icon {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="pin-container">
+        <div class="pin-card" id="pin-card">
+            <!-- El contenido se genera por JS -->
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+
+    <script>
+    // Verificar si el usuario está autenticado
+    const userId = localStorage.getItem('user_id');
+    const userName = localStorage.getItem('user_name');
+    const userEmail = localStorage.getItem('user_email');
+    const userPhoto = localStorage.getItem('user_photo');
+    const authType = localStorage.getItem('auth_type') || 'pin';
+
+    const pinCard = document.getElementById('pin-card');
+    
+    // Mostrar interfaz según el tipo de autenticación
+    function renderAuthInterface() {
+        // Información del usuario
+        const userInfoHTML = userId ? `
+            <div class="user-info">
+                <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
+                <div>
+                    <p class="user-name">${userName || 'Usuario'}</p>
+                    <p class="user-email">${userEmail || ''}</p>
+                </div>
+            </div>
+        ` : '';
+        
+        // Renderizar interfaz según tipo de autenticación
+        switch(authType) {
+            case 'pin':
+                renderPinInterface(userInfoHTML);
+                break;
+            case 'password':
+                renderPasswordInterface(userInfoHTML);
+                break;
+            case 'biometric':
+                renderBiometricInterface(userInfoHTML);
+                break;
+            case 'none':
+                // Sin seguridad adicional, redirigir directamente
+                sessionStorage.setItem('pin_ok', '1');
+                window.location.href = 'index.html';
+                break;
+            default:
+                // Por defecto, mostrar PIN
+                renderPinInterface(userInfoHTML);
+        }
+    }
+
+    // Interfaz de PIN
+    function renderPinInterface(userInfoHTML) {
+        pinCard.innerHTML = `
+            ${userInfoHTML}
+            <div class="pin-title">Ingresa tu PIN</div>
+            <div class="pin-desc">Introduce el PIN de 4 dígitos para acceder</div>
+            <input type="password" maxlength="4" pattern="\\d{4}" class="pin-input" id="enter-pin" autocomplete="off" inputmode="numeric" />
+            <br>
+            <button class="pin-btn" id="enter-pin-btn">Acceder</button>
+            <div class="pin-error" id="pin-error" style="display:none;"></div>
+            ${renderAuthOptions()}
+        `;
+        
+        document.getElementById('enter-pin-btn').addEventListener('click', validatePin);
+        document.getElementById('enter-pin').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validatePin();
+        });
+    }
+
+    // Interfaz de contraseña
+    function renderPasswordInterface(userInfoHTML) {
+        pinCard.innerHTML = `
+            ${userInfoHTML}
+            <div class="pin-title">Ingresa tu Contraseña</div>
+            <div class="pin-desc">Introduce tu contraseña para acceder</div>
+            <input type="password" class="password-input" id="enter-password" autocomplete="off" />
+            <br>
+            <button class="pin-btn" id="enter-password-btn">Acceder</button>
+            <div class="pin-error" id="pin-error" style="display:none;"></div>
+            ${renderAuthOptions()}
+        `;
+        
+        document.getElementById('enter-password-btn').addEventListener('click', validatePassword);
+        document.getElementById('enter-password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validatePassword();
+        });
+    }
+
+    // Interfaz biométrica
+    function renderBiometricInterface(userInfoHTML) {
+        pinCard.innerHTML = `
+            ${userInfoHTML}
+            <div class="pin-title">Autenticación Biométrica</div>
+            <div class="pin-desc">Utiliza tu huella digital para acceder</div>
+            <div id="fingerprint-button" class="biometric-button">
+                <span class="fingerprint-icon">👆</span>
+                <span>Autenticar con Huella Digital</span>
+            </div>
+            <div class="pin-error" id="pin-error" style="display:none;"></div>
+            ${renderAuthOptions()}
+        `;
+        
+        document.getElementById('fingerprint-button').addEventListener('click', authenticateBiometric);
+    }
+
+    // Opciones de autenticación alternativas
+    function renderAuthOptions() {
+        // Solo mostrar opciones de cambio si hay múltiples métodos configurados
+        const hasPin = localStorage.getItem('user_pin');
+        const hasPassword = localStorage.getItem('user_password');
+        
+        let optionsHTML = '<div class="auth-options">';
+        
+        if (authType !== 'pin' && hasPin) {
+            optionsHTML += '<button class="auth-option" id="switch-to-pin">Usar PIN</button>';
+        }
+        
+        if (authType !== 'password' && hasPassword) {
+            optionsHTML += '<button class="auth-option" id="switch-to-password">Usar Contraseña</button>';
+        }
+        
+        if (authType !== 'biometric' && localStorage.getItem('auth_type') === 'biometric') {
+            optionsHTML += '<button class="auth-option" id="switch-to-biometric">Usar Huella</button>';
+        }
+        
+        optionsHTML += '</div>';
+        
+        // Opción para iniciar sesión con Google
+        optionsHTML += `
+            <button id="login-with-google" class="login-with-google">
+                <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                Iniciar sesión con Google
+            </button>
+        `;
+        
+        return optionsHTML;
+    }
+
+    // Validar PIN
+    function validatePin() {
+        const pin = document.getElementById('enter-pin').value.trim();
+        const savedPin = localStorage.getItem('user_pin');
+        
+        if (pin === savedPin) {
+            sessionStorage.setItem('pin_ok', '1');
+            window.location.href = 'index.html';
+        } else {
+            showError('PIN incorrecto. Intenta de nuevo.');
+        }
+    }
+
+    // Validar contraseña
+    function validatePassword() {
+        const password = document.getElementById('enter-password').value;
+        const savedPassword = localStorage.getItem('user_password');
+        
+        if (password === savedPassword) {
+            sessionStorage.setItem('pin_ok', '1');
+            window.location.href = 'index.html';
+        } else {
+            showError('Contraseña incorrecta. Intenta de nuevo.');
+        }
+    }
+
+    // Autenticación biométrica
+    function authenticateBiometric() {
+        // Verificar si la API Web Authentication está disponible
+        if (!window.PublicKeyCredential) {
+            showError('Tu dispositivo no soporta autenticación biométrica');
+            return;
+        }
+        
+        // Verificar si el dispositivo soporta autenticación biométrica
+        PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+            .then(available => {
+                if (!available) {
+                    showError('Tu dispositivo no tiene sensor de huellas configurado');
+                    return;
+                }
+                
+                // Aquí iría la lógica real de autenticación biométrica
+                // Este es un ejemplo simplificado
+                
+                // Simulamos una autenticación exitosa
+                setTimeout(() => {
+                    sessionStorage.setItem('pin_ok', '1');
+                    window.location.href = 'index.html';
+                }, 1000);
+            })
+            .catch(err => {
+                showError('Error al verificar soporte biométrico: ' + err.message);
+            });
+    }
+
+    // Iniciar sesión con Google
+    function setupGoogleSignIn() {
+        document.getElementById('login-with-google').addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    // El usuario ha iniciado sesión correctamente
+                    const user = result.user;
+                    
+                    // Guardar información del usuario en localStorage
+                    localStorage.setItem('user_id', user.uid);
+                    localStorage.setItem('user_email', user.email);
+                    localStorage.setItem('user_name', user.displayName);
+                    localStorage.setItem('user_photo', user.photoURL);
+                    
+                    // Redirigir a la página de opciones de seguridad si es un nuevo usuario
+                    const isNewUser = result.additionalUserInfo.isNewUser;
+                    if (isNewUser) {
+                        window.location.href = 'security-options.html';
+                    } else {
+                        // Si es un usuario existente, permitir acceso directo
+                        sessionStorage.setItem('pin_ok', '1');
+                        window.location.href = 'index.html';
+                    }
+                })
+                .catch((error) => {
+                    showError('Error al iniciar sesión: ' + error.message);
+                });
+        });
+    }
+
+    // Configurar cambios entre métodos de autenticación
+    function setupAuthSwitching() {
+        // Cambiar a PIN
+        const switchToPinBtn = document.getElementById('switch-to-pin');
+        if (switchToPinBtn) {
+            switchToPinBtn.addEventListener('click', () => {
+                renderPinInterface(getUserInfoHTML());
+                setupAuthSwitching();
+            });
+        }
+        
+        // Cambiar a contraseña
+        const switchToPasswordBtn = document.getElementById('switch-to-password');
+        if (switchToPasswordBtn) {
+            switchToPasswordBtn.addEventListener('click', () => {
+                renderPasswordInterface(getUserInfoHTML());
+                setupAuthSwitching();
+            });
+        }
+        
+        // Cambiar a biométrico
+        const switchToBiometricBtn = document.getElementById('switch-to-biometric');
+        if (switchToBiometricBtn) {
+            switchToBiometricBtn.addEventListener('click', () => {
+                renderBiometricInterface(getUserInfoHTML());
+                setupAuthSwitching();
+            });
+        }
+        
+        // Configurar inicio de sesión con Google
+        setupGoogleSignIn();
+    }
+
+    // Obtener HTML de información del usuario
+    function getUserInfoHTML() {
+        return userId ? `
+            <div class="user-info">
+                <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
+                <div>
+                    <p class="user-name">${userName || 'Usuario'}</p>
+                    <p class="user-email">${userEmail || ''}</p>
+                </div>
+            </div>
+        ` : '';
+    }
+
+    // Mostrar mensaje de error
+    function showError(msg) {
+        const err = document.getElementById('pin-error');
+        err.textContent = msg;
+        err.style.display = 'block';
+    }
+
+    // Lógica principal
+    const pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // Por defecto habilitado
+    
+    // Si el PIN está deshabilitado, ir directamente a index.html
+    if (!pinEnabled) {
+        sessionStorage.setItem('pin_ok', '1');
+        window.location.href = 'index.html';
+    } else {
+        renderAuthInterface();
+        setupAuthSwitching();
+    }
+    </script>
+</body>
+</html> 
