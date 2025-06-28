@@ -89,6 +89,8 @@ class ExpenseTracker {
 
         // Renderizar categorías dinámicamente
         this.renderCategories();
+        // Asegurar que se muestren las categorías correctas según el tipo seleccionado
+        this.updateCategoryOptions();
 
         // Configurar event listeners
         this.setupEventListeners();
@@ -103,11 +105,6 @@ class ExpenseTracker {
     }
 
     setupEventListeners() {
-        // Tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
-        });
-
         // Formulario de transacción
         document.getElementById('transaction-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -172,6 +169,22 @@ class ExpenseTracker {
 
         // Pull to refresh
         this.setupPullToRefresh();
+        
+        // Configurar navegación con el menú inferior
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            if (item.dataset.tab) {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabName = item.dataset.tab;
+                    this.switchTab(tabName);
+                    
+                    // Actualizar estado activo en el menú inferior
+                    document.querySelectorAll('.bottom-nav-item').forEach(navItem => {
+                        navItem.classList.toggle('active', navItem.dataset.tab === tabName);
+                    });
+                });
+            }
+        });
     }
 
     setupSwipeGestures() {
@@ -225,8 +238,8 @@ class ExpenseTracker {
 
     // Cambiar pestaña
     switchTab(tabName) {
-        // Actualizar botones de pestañas
-        document.querySelectorAll('.tab-btn').forEach(btn => {
+        // Actualizar botones del menú inferior
+        document.querySelectorAll('.bottom-nav-item').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
 
@@ -272,22 +285,24 @@ class ExpenseTracker {
         // Limpiar opciones excepto la primera
         categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
 
-        // Si no se especifica tipo, mostrar todas
-        const typesToShow = type ? [type] : ['income', 'expense'];
-
-        typesToShow.forEach(t => {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = t === 'income' ? 'Ingresos' : 'Gastos';
-
-            data.categories[t].forEach(cat => {
+        // Si no se especifica tipo, usar el tipo seleccionado actualmente
+        const selectedType = type || document.querySelector('input[name="type"]:checked').value;
+        
+        // Mostrar solo las categorías del tipo seleccionado
+        if (data.categories[selectedType] && data.categories[selectedType].length > 0) {
+            data.categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
                 option.textContent = `${cat.icon} ${cat.name}`;
-                optgroup.appendChild(option);
+                categorySelect.appendChild(option);
             });
-
-            categorySelect.appendChild(optgroup);
-        });
+        } else {
+            // Si no hay categorías, agregar una opción deshabilitada
+            const option = document.createElement('option');
+            option.disabled = true;
+            option.textContent = 'No hay categorías disponibles';
+            categorySelect.appendChild(option);
+        }
 
         // Resetear selección
         categorySelect.selectedIndex = 0;
@@ -618,6 +633,15 @@ class ExpenseTracker {
     openCategoryPicker() {
         const type = document.querySelector('input[name="type"]:checked').value;
         const data = storage.getData();
+        
+        // Verificar que existan datos y categorías
+        if (!data || !data.categories || !data.categories[type] || data.categories[type].length === 0) {
+            // Si no hay categorías, mostrar un mensaje
+            this.showNotification('No hay categorías disponibles. Por favor, crea una categoría primero.', 'info');
+            this.openCategoryModal();
+            return;
+        }
+        
         const categories = data.categories[type];
         const pickerList = document.getElementById('category-picker-list');
         

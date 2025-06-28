@@ -47,13 +47,6 @@
             <span class="text">Desliza para actualizar</span>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="add">Agregar</button>
-            <button class="tab-btn" data-tab="list">Transacciones</button>
-            <button class="tab-btn" data-tab="stats">Estadísticas</button>
-        </div>
-
         <!-- Tab Content -->
         <div class="tab-content">
             <!-- Add Transaction Tab -->
@@ -199,6 +192,15 @@
                 <div class="bottom-nav-text">Salir</div>
             </a>
         </nav>
+        
+        <!-- Category Picker Modal -->
+        <div id="category-picker-modal" class="modal hidden">
+            <div class="category-picker-modal-content">
+                <div id="category-picker-list" class="category-picker-list"></div>
+                <button id="close-category-picker" class="close-modal-btn">&times;</button>
+                <div id="scroll-indicator" class="category-picker-scroll-indicator">Desliza para ver más</div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -311,26 +313,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
             
-            // Sincronizar menú inferior con pestañas existentes
-            document.querySelectorAll('.tab-btn').forEach(tabBtn => {
-                tabBtn.addEventListener('click', function() {
-                    const tabName = this.dataset.tab;
-                    updateBottomNav(tabName);
-                });
-            });
-            
             // Configurar eventos de clic para el menú inferior
             bottomNavItems.forEach(item => {
                 if (item.dataset.tab) {
                     item.addEventListener('click', function(e) {
                         e.preventDefault();
                         const tabName = this.dataset.tab;
-                        
-                        // Activar la pestaña correspondiente
-                        const tabButton = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-                        if (tabButton) {
-                            tabButton.click();
-                        }
                         
                         // Actualizar menú inferior
                         updateBottomNav(tabName);
