@@ -43,7 +43,16 @@
                         <option value="dark">Modo Oscuro</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="language-selector">Idioma</label>
+                            <select id="language-selector">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="pt">Português</option>
+                            </select>
                         </div>
+                    </div>
             
             <div class="settings-section">
                 <h3>Seguridad</h3>
@@ -119,7 +128,7 @@
                 <div class="bottom-nav-icon">⚙️</div>
                 <div class="bottom-nav-text">Ajustes</div>
             </a>
-            <a href="welcome.html" class="bottom-nav-item">
+            <a href="pin.html" class="bottom-nav-item">
                 <div class="bottom-nav-icon">🚪</div>
                 <div class="bottom-nav-text">Salir</div>
             </a>
@@ -238,6 +247,16 @@
             themeSelector.addEventListener('change', function() {
                 localStorage.setItem('app_theme', this.value);
                 location.reload();
+            });
+            
+            // Configurar selector de idioma
+            const languageSelector = document.getElementById('language-selector');
+            const currentLanguage = localStorage.getItem('app_language') || 'es';
+            languageSelector.value = currentLanguage;
+            
+            languageSelector.addEventListener('change', function() {
+                localStorage.setItem('app_language', this.value);
+                showNotification('Idioma cambiado a ' + this.options[this.selectedIndex].text);
             });
             
             // Configurar toggle de PIN

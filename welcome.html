@@ -134,15 +134,43 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/firebase-debug.js"></script>
     <script>
+        // Verificar si el usuario ya está registrado
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = localStorage.getItem('user_id');
+            if (userId) {
+                // El usuario ya está registrado, mostrar mensaje y redirigir
+                const welcomeCard = document.querySelector('.welcome-card');
+                welcomeCard.innerHTML = `
+                    <div class="app-logo">💰</div>
+                    <h1 class="welcome-title">Mi Gestor Financiero</h1>
+                    <p class="welcome-subtitle">Ya tienes una cuenta registrada</p>
+                    <div class="auth-buttons">
+                        <button class="btn-auth btn-login" id="login-redirect-btn">Iniciar Sesión</button>
+                    </div>
+                `;
+                
+                document.getElementById('login-redirect-btn').addEventListener('click', () => {
+                    window.location.href = 'auth.html?mode=login';
+                });
+                
+                // Redirigir automáticamente después de 3 segundos
+                setTimeout(() => {
+                    window.location.href = 'auth.html?mode=login';
+                }, 3000);
+                
+                return;
+            }
+        });
+    
         // Guardar idioma seleccionado
         document.getElementById('language').addEventListener('change', (e) => {
-            localStorage.setItem('user_language', e.target.value);
+            localStorage.setItem('app_language', e.target.value);
             updateLanguageUI(e.target.value);
         });
         
         // Cargar idioma guardado o detectar del navegador
         function loadLanguage() {
-            let savedLanguage = localStorage.getItem('user_language');
+            let savedLanguage = localStorage.getItem('app_language');
             if (!savedLanguage) {
                 // Detectar idioma del navegador
                 const browserLang = navigator.language.split('-')[0];
@@ -152,7 +180,7 @@
                 } else {
                     savedLanguage = 'es'; // Idioma por defecto
                 }
-                localStorage.setItem('user_language', savedLanguage);
+                localStorage.setItem('app_language', savedLanguage);
             }
             
             // Establecer el valor en el selector
@@ -168,38 +196,66 @@
                     subtitle: 'Controla tus finanzas de manera fácil y segura',
                     languageLabel: 'Selecciona tu idioma:',
                     login: 'Iniciar Sesión',
-                    register: 'Registrarse'
+                    register: 'Registrarse',
+                    alreadyRegistered: 'Ya tienes una cuenta registrada',
+                    redirecting: 'Redirigiendo a inicio de sesión...'
                 },
                 'en': {
                     title: 'My Financial Manager',
                     subtitle: 'Control your finances easily and securely',
                     languageLabel: 'Select your language:',
                     login: 'Login',
-                    register: 'Register'
+                    register: 'Register',
+                    alreadyRegistered: 'You already have a registered account',
+                    redirecting: 'Redirecting to login...'
                 },
                 'pt': {
                     title: 'Meu Gerenciador Financeiro',
                     subtitle: 'Controle suas finanças de forma fácil e segura',
                     languageLabel: 'Selecione seu idioma:',
                     login: 'Entrar',
-                    register: 'Registrar'
+                    register: 'Registrar',
+                    alreadyRegistered: 'Você já tem uma conta registrada',
+                    redirecting: 'Redirecionando para login...'
                 },
                 'fr': {
                     title: 'Mon Gestionnaire Financier',
                     subtitle: 'Contrôlez vos finances facilement et en toute sécurité',
                     languageLabel: 'Sélectionnez votre langue:',
                     login: 'Connexion',
-                    register: 'S\'inscrire'
+                    register: 'S\'inscrire',
+                    alreadyRegistered: 'Vous avez déjà un compte enregistré',
+                    redirecting: 'Redirection vers la connexion...'
                 }
             };
             
             const t = translations[lang] || translations['es'];
             
-            document.querySelector('.welcome-title').textContent = t.title;
-            document.querySelector('.welcome-subtitle').textContent = t.subtitle;
-            document.querySelector('.language-label').textContent = t.languageLabel;
-            document.getElementById('login-btn').textContent = t.login;
-            document.getElementById('register-btn').textContent = t.register;
+            // Actualizar textos solo si existen los elementos
+            const titleElement = document.querySelector('.welcome-title');
+            if (titleElement) titleElement.textContent = t.title;
+            
+            const subtitleElement = document.querySelector('.welcome-subtitle');
+            if (subtitleElement) {
+                // Si el usuario ya está registrado, mostrar mensaje diferente
+                if (localStorage.getItem('user_id')) {
+                    subtitleElement.textContent = t.alreadyRegistered;
+                } else {
+                    subtitleElement.textContent = t.subtitle;
+                }
+            }
+            
+            const languageLabelElement = document.querySelector('.language-label');
+            if (languageLabelElement) languageLabelElement.textContent = t.languageLabel;
+            
+            const loginBtnElement = document.getElementById('login-btn');
+            if (loginBtnElement) loginBtnElement.textContent = t.login;
+            
+            const registerBtnElement = document.getElementById('register-btn');
+            if (registerBtnElement) registerBtnElement.textContent = t.register;
+            
+            const loginRedirectBtnElement = document.getElementById('login-redirect-btn');
+            if (loginRedirectBtnElement) loginRedirectBtnElement.textContent = t.login;
             
             // Actualizar el atributo lang del HTML
             document.documentElement.lang = lang;
@@ -208,13 +264,20 @@
         // Cargar idioma al iniciar
         loadLanguage();
         
-        document.getElementById('login-btn').addEventListener('click', () => {
-            window.location.href = 'auth.html?mode=login';
-        });
+        // Solo configurar estos event listeners si los elementos existen
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                window.location.href = 'auth.html?mode=login';
+            });
+        }
         
-        document.getElementById('register-btn').addEventListener('click', () => {
-            window.location.href = 'auth.html?mode=register';
-        });
+        const registerBtn = document.getElementById('register-btn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', () => {
+                window.location.href = 'auth.html?mode=register';
+            });
+        }
     </script>
 </body>
 </html> 
