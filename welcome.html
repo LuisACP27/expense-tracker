@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
+    <script src="js/language.js"></script>
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
@@ -117,7 +118,7 @@
             <div class="language-selector">
                 <label for="language" class="language-label">Selecciona tu idioma:</label>
                 <select id="language" class="language-select">
-                    <option value="es" selected>Español</option>
+                    <option value="es">Español</option>
                     <option value="en">English</option>
                     <option value="pt">Português</option>
                     <option value="fr">Français</option>
@@ -134,10 +135,32 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/firebase-debug.js"></script>
     <script>
-        // Verificar si el usuario ya está registrado
         document.addEventListener('DOMContentLoaded', () => {
-            // Cargar idioma
-            loadLanguage();
+            // Cargar idioma por defecto (español)
+            const t = window.appLanguage.changeLanguage('es');
+            
+            // Actualizar textos de la interfaz
+            document.querySelector('.welcome-title').textContent = t.welcomeTitle;
+            document.querySelector('.welcome-subtitle').textContent = t.welcomeSubtitle;
+            document.querySelector('.language-label').textContent = t.selectLanguage;
+            document.getElementById('login-btn').textContent = t.login;
+            document.getElementById('register-btn').textContent = t.register;
+            
+            // Configurar selector de idioma
+            const languageSelector = document.getElementById('language');
+            languageSelector.value = 'es'; // Siempre español por defecto en welcome
+            
+            languageSelector.addEventListener('change', function() {
+                const newLang = this.value;
+                const t = window.appLanguage.changeLanguage(newLang);
+                
+                // Actualizar textos
+                document.querySelector('.welcome-title').textContent = t.welcomeTitle;
+                document.querySelector('.welcome-subtitle').textContent = t.welcomeSubtitle;
+                document.querySelector('.language-label').textContent = t.selectLanguage;
+                document.getElementById('login-btn').textContent = t.login;
+                document.getElementById('register-btn').textContent = t.register;
+            });
             
             // Configurar botones de autenticación
             document.getElementById('login-btn').addEventListener('click', () => {
@@ -148,75 +171,6 @@
                 window.location.href = 'auth.html?mode=register';
             });
         });
-    
-        // Guardar idioma seleccionado
-        document.getElementById('language').addEventListener('change', (e) => {
-            localStorage.setItem('app_language', e.target.value);
-            updateLanguageUI(e.target.value);
-        });
-        
-        // Cargar idioma guardado o detectar del navegador
-        function loadLanguage() {
-            let savedLanguage = localStorage.getItem('app_language');
-            if (!savedLanguage) {
-                // Detectar idioma del navegador
-                const browserLang = navigator.language.split('-')[0];
-                // Solo usar idiomas soportados
-                if (['es', 'en', 'pt', 'fr'].includes(browserLang)) {
-                    savedLanguage = browserLang;
-                } else {
-                    savedLanguage = 'es'; // Idioma por defecto
-                }
-                localStorage.setItem('app_language', savedLanguage);
-            }
-            
-            // Establecer el valor en el selector
-            document.getElementById('language').value = savedLanguage;
-            updateLanguageUI(savedLanguage);
-        }
-        
-        // Actualizar UI según el idioma
-        function updateLanguageUI(lang) {
-            const translations = {
-                'es': {
-                    title: 'Mi Gestor Financiero',
-                    subtitle: 'Controla tus finanzas de manera fácil y segura',
-                    languageLabel: 'Selecciona tu idioma:',
-                    login: 'Iniciar Sesión',
-                    register: 'Registrarse'
-                },
-                'en': {
-                    title: 'My Financial Manager',
-                    subtitle: 'Control your finances easily and securely',
-                    languageLabel: 'Select your language:',
-                    login: 'Login',
-                    register: 'Register'
-                },
-                'pt': {
-                    title: 'Meu Gerenciador Financeiro',
-                    subtitle: 'Controle suas finanças de forma fácil e segura',
-                    languageLabel: 'Selecione seu idioma:',
-                    login: 'Entrar',
-                    register: 'Registrar'
-                },
-                'fr': {
-                    title: 'Mon Gestionnaire Financier',
-                    subtitle: 'Contrôlez vos finances facilement et en toute sécurité',
-                    languageLabel: 'Sélectionnez votre langue:',
-                    login: 'Connexion',
-                    register: 'S\'inscrire'
-                }
-            };
-            
-            const t = translations[lang] || translations['es'];
-            
-            // Actualizar textos
-            document.querySelector('.welcome-title').textContent = t.title;
-            document.querySelector('.welcome-subtitle').textContent = t.subtitle;
-            document.querySelector('.language-label').textContent = t.languageLabel;
-            document.getElementById('login-btn').textContent = t.login;
-            document.getElementById('register-btn').textContent = t.register;
-        }
     </script>
 </body>
 </html> 

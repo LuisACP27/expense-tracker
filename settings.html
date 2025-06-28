@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
+    <script src="js/language.js"></script>
     <script>
       // Verificar si el PIN está habilitado y si se ha ingresado correctamente
       const pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // Por defecto habilitado
@@ -24,90 +25,90 @@
         <!-- Header -->
         <header>
             <a href="index.html" class="back-btn" title="Volver" aria-label="Volver">←</a>
-            <h1>Ajustes</h1>
+            <h1 id="settings-title">Ajustes</h1>
         </header>
 
         <!-- Contenido de Ajustes -->
-            <div class="settings-page">
-                    <div class="settings-section">
-                        <h3>Apariencia</h3>
-                        <div class="form-group">
-                    <label for="theme-selector">Tema</label>
+        <div class="settings-page">
+            <div class="settings-section">
+                <h3 id="appearance-title">Apariencia</h3>
+                <div class="form-group">
+                    <label for="theme-selector" id="theme-label">Tema</label>
                     <select id="theme-selector">
-                        <option value="green">Verde (Predeterminado)</option>
-                                <option value="blue">Azul</option>
-                        <option value="purple">Púrpura</option>
-                                <option value="red">Rojo</option>
-                                <option value="orange">Naranja</option>
-                                <option value="gray">Gris</option>
-                        <option value="dark">Modo Oscuro</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="language-selector">Idioma</label>
-                            <select id="language-selector">
-                                <option value="es">Español</option>
-                                <option value="en">English</option>
-                                <option value="fr">Français</option>
-                                <option value="pt">Português</option>
-                            </select>
-                        </div>
-                    </div>
+                        <option value="green" id="theme-green">Verde (Predeterminado)</option>
+                        <option value="blue" id="theme-blue">Azul</option>
+                        <option value="purple" id="theme-purple">Púrpura</option>
+                        <option value="red" id="theme-red">Rojo</option>
+                        <option value="orange" id="theme-orange">Naranja</option>
+                        <option value="gray" id="theme-gray">Gris</option>
+                        <option value="dark" id="theme-dark">Modo Oscuro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="language-selector" id="language-label">Idioma</label>
+                    <select id="language-selector">
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="pt">Português</option>
+                    </select>
+                </div>
+            </div>
             
             <div class="settings-section">
-                <h3>Seguridad</h3>
+                <h3 id="security-title">Seguridad</h3>
                 <div class="form-group">
                     <div class="night-mode-group">
-                        <span>PIN de seguridad</span>
-                            <label class="switch">
+                        <span id="pin-label">PIN de seguridad</span>
+                        <label class="switch">
                             <input type="checkbox" id="pin-toggle">
                             <span class="slider"></span>
-                            </label>
+                        </label>
                     </div>
                     <button id="change-security" class="btn btn-secondary">Cambiar opciones de seguridad</button>
-                        </div>
-                    </div>
+                </div>
+            </div>
 
-                    <div class="settings-section">
-                <h3>Datos</h3>
+            <div class="settings-section">
+                <h3 id="data-title">Datos</h3>
                 <div class="settings-actions">
                     <button id="export-data" class="btn btn-secondary">Exportar datos</button>
                     <button id="import-data" class="btn btn-secondary">Importar datos</button>
                     <button id="clear-data" class="btn btn-danger">Eliminar todos los datos</button>
                     <input type="file" id="import-file" style="display: none;" accept=".json">
-                        </div>
-                    </div>
+                </div>
+            </div>
 
-                    <div class="settings-section">
-                <h3>Cuenta</h3>
+            <div class="settings-section">
+                <h3 id="account-title">Cuenta</h3>
                 <div id="user-account-info" class="user-info">
                     <!-- La información del usuario se cargará aquí dinámicamente -->
-                        </div>
-                        <div class="settings-actions">
+                </div>
+                <div class="settings-actions">
                     <button id="logout-btn" class="btn btn-danger">Cerrar sesión</button>
-                        </div>
-                    </div>
+                </div>
+            </div>
 
-                    <div class="settings-section">
-                <h3>Acerca de</h3>
+            <div class="settings-section">
+                <h3 id="about-title">Acerca de</h3>
                 <div class="app-info">
                     <p><strong>Mi Gestor Financiero</strong></p>
                     <p>Versión 1.0.0</p>
                     <p>Una aplicación para gestionar tus finanzas personales</p>
+                </div>
             </div>
         </div>
-    </div>
 
         <!-- Custom Confirmation Modal -->
         <div id="confirm-modal" class="modal hidden">
             <div class="modal-content">
-                <h3>Confirmar acción</h3>
+                <h3 id="confirm-title">Confirmar acción</h3>
                 <p id="confirm-message">¿Estás seguro?</p>
                 <div class="modal-buttons">
                     <button id="confirm-yes" class="btn btn-primary">Aceptar</button>
                     <button id="confirm-no" class="btn btn-secondary">Cancelar</button>
                 </div>
-                </div>
+            </div>
         </div>
         
         <!-- Menú de navegación inferior -->
@@ -145,103 +146,35 @@
                 .catch(err => console.log('Error al registrar Service Worker:', err));
         }
         
-        // Aplicar tema guardado
-        (function() {
-            const themes = {
-                green: {
-                    '--primary-color': '#4CAF50',
-                    '--primary-color-rgb': '76, 175, 80',
-                    '--secondary-color': '#53C5A8',
-                    '--background-color': '#f5f5f5',
-                    '--card-background': '#ffffff',
-                    '--border-color': '#e0e0e0',
-                    '--income-color': '#4CAF50',
-                    '--expense-color': '#f44336'
-                },
-                blue: {
-                    '--primary-color': '#2196F3',
-                    '--primary-color-rgb': '33, 150, 243',
-                    '--secondary-color': '#10d1c2',
-                    '--background-color': '#e3f2fd',
-                    '--card-background': '#ffffff',
-                    '--border-color': '#90caf9',
-                    '--income-color': '#2196F3',
-                    '--expense-color': '#f44336'
-                },
-                dark: {
-                    '--primary-color': '#212121',
-                    '--primary-color-rgb': '33, 33, 33',
-                    '--secondary-color': '#424242',
-                    '--background-color': '#121212',
-                    '--card-background': '#1e1e1e',
-                    '--border-color': '#424242',
-                    '--income-color': '#81c784',
-                    '--expense-color': '#e57373'
-                },
-                red: {
-                    '--primary-color': '#e53935',
-                    '--primary-color-rgb': '229, 57, 53',
-                    '--secondary-color': '#ff7043',
-                    '--background-color': '#fff5f5',
-                    '--card-background': '#fff',
-                    '--border-color': '#ffcdd2',
-                    '--income-color': '#e53935',
-                    '--expense-color': '#b71c1c'
-                },
-                purple: {
-                    '--primary-color': '#8e24aa',
-                    '--primary-color-rgb': '142, 36, 170',
-                    '--secondary-color': '#d82ccd',
-                    '--background-color': '#f3e5f5',
-                    '--card-background': '#fff',
-                    '--border-color': '#ce93d8',
-                    '--income-color': '#8e24aa',
-                    '--expense-color': '#d500f9'
-                },
-                orange: {
-                    '--primary-color': '#fb8c00',
-                    '--primary-color-rgb': '251, 140, 0',
-                    '--secondary-color': '#ffb300',
-                    '--background-color': '#fff3e0',
-                    '--card-background': '#fff',
-                    '--border-color': '#ffe0b2',
-                    '--income-color': '#fb8c00',
-                    '--expense-color': '#e65100'
-                },
-                gray: {
-                    '--primary-color': '#757575',
-                    '--primary-color-rgb': '117, 117, 117',
-                    '--secondary-color': '#bdbdbd',
-                    '--background-color': '#f5f5f5',
-                    '--card-background': '#fff',
-                    '--border-color': '#e0e0e0',
-                    '--income-color': '#757575',
-                    '--expense-color': '#bdbdbd'
-                }
-            };
-            
-            const savedTheme = localStorage.getItem('app_theme') || 'green';
-            const themeColors = themes[savedTheme];
-            
-            if (themeColors) {
-                Object.keys(themeColors).forEach(key => {
-                    document.documentElement.style.setProperty(key, themeColors[key]);
-                });
-                
-                if (savedTheme === 'dark') {
-                    document.body.classList.add('night-mode');
-                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#212121');
-                } else {
-                    document.body.classList.remove('night-mode');
-                    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColors['--primary-color']);
-                }
-                
-                // Actualizar selector de tema
-                document.getElementById('theme-selector').value = savedTheme;
-            }
-        })();
-        
         document.addEventListener('DOMContentLoaded', function() {
+            // Obtener traducciones actuales
+            const t = window.appLanguage.getTranslations();
+            
+            // Actualizar textos de la interfaz
+            document.getElementById('settings-title').textContent = t.settings;
+            document.getElementById('appearance-title').textContent = t.appearance;
+            document.getElementById('theme-label').textContent = t.theme;
+            document.getElementById('language-label').textContent = t.language;
+            document.getElementById('security-title').textContent = t.security;
+            document.getElementById('pin-label').textContent = t.securityPin;
+            document.getElementById('change-security').textContent = t.changeSecurityOptions;
+            document.getElementById('data-title').textContent = t.data;
+            document.getElementById('export-data').textContent = t.exportData;
+            document.getElementById('import-data').textContent = t.importData;
+            document.getElementById('clear-data').textContent = t.deleteData;
+            document.getElementById('account-title').textContent = t.account;
+            document.getElementById('logout-btn').textContent = t.logout;
+            document.getElementById('about-title').textContent = t.about;
+            
+            // Actualizar opciones de tema
+            document.getElementById('theme-green').textContent = t.themeGreen;
+            document.getElementById('theme-blue').textContent = t.themeBlue;
+            document.getElementById('theme-purple').textContent = t.themePurple;
+            document.getElementById('theme-red').textContent = t.themeRed;
+            document.getElementById('theme-orange').textContent = t.themeOrange;
+            document.getElementById('theme-gray').textContent = t.themeGray;
+            document.getElementById('theme-dark').textContent = t.themeDark;
+            
             // Configurar selector de tema
             const themeSelector = document.getElementById('theme-selector');
             themeSelector.addEventListener('change', function() {
@@ -251,12 +184,13 @@
             
             // Configurar selector de idioma
             const languageSelector = document.getElementById('language-selector');
-            const currentLanguage = localStorage.getItem('app_language') || 'es';
-            languageSelector.value = currentLanguage;
+            languageSelector.value = window.appLanguage.getCurrentLanguage();
             
             languageSelector.addEventListener('change', function() {
-                localStorage.setItem('app_language', this.value);
-                showNotification('Idioma cambiado a ' + this.options[this.selectedIndex].text);
+                const newLang = this.value;
+                const t = window.appLanguage.changeLanguage(newLang);
+                showNotification(t.languageChanged);
+                location.reload();
             });
             
             // Configurar toggle de PIN
@@ -266,7 +200,7 @@
             
             pinToggle.addEventListener('change', function() {
                 localStorage.setItem('pin_enabled', this.checked);
-                showNotification(this.checked ? 'PIN habilitado' : 'PIN deshabilitado');
+                showNotification(this.checked ? t.pinEnabled : t.pinDisabled);
             });
             
             // Configurar botón de cambio de seguridad
@@ -278,7 +212,7 @@
             document.getElementById('export-data').addEventListener('click', function() {
                 const storage = new Storage();
                 storage.exportData();
-                showNotification('Datos exportados correctamente');
+                showNotification(t.dataExported);
             });
             
             // Configurar botón de importar datos
@@ -297,27 +231,27 @@
                 
                 storage.importData(file)
                     .then(() => {
-                        showNotification('Datos importados correctamente');
+                        showNotification(t.dataImported);
                         e.target.value = '';
                     })
                     .catch(error => {
-                        showNotification('Error al importar datos: ' + error, 'error');
+                        showNotification('Error: ' + error, 'error');
                         e.target.value = '';
                     });
             });
             
             // Configurar botón de eliminar datos
             document.getElementById('clear-data').addEventListener('click', function() {
-                showConfirmDialog('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.', function() {
+                showConfirmDialog(t.confirmDelete, function() {
                     const storage = new Storage();
                     storage.clearAllData();
-                    showNotification('Todos los datos han sido eliminados');
+                    showNotification(t.dataDeleted);
                 });
             });
             
             // Configurar botón de cierre de sesión
             document.getElementById('logout-btn').addEventListener('click', function() {
-                showConfirmDialog('¿Estás seguro de que quieres cerrar sesión?', function() {
+                showConfirmDialog(t.confirmLogout, function() {
                     // Obtener el prefijo del usuario actual
                     const userId = localStorage.getItem('user_id');
                     const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
