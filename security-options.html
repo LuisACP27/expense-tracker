@@ -10,57 +10,54 @@
     <link rel="apple-touch-icon" href="icon-192.png" />
     <style>
         .security-container {
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            text-align: center;
             background: linear-gradient(135deg, var(--primary-color-light, #81c784), var(--primary-color, #4CAF50));
         }
         
         .security-card {
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 2.5rem 2rem;
+            max-width: 400px;
             width: 100%;
-            max-width: 450px;
         }
         
         .security-title {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
             color: var(--primary-color, #4CAF50);
+            text-align: center;
         }
         
         .security-subtitle {
-            font-size: 1rem;
-            margin-bottom: 25px;
             color: #666;
+            text-align: center;
+            margin-bottom: 2rem;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 8px;
         }
         
         .user-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            margin-right: 15px;
             object-fit: cover;
-            border: 2px solid var(--primary-color, #4CAF50);
         }
         
         .user-name {
             font-weight: 600;
-            font-size: 1.1rem;
             margin: 0;
         }
         
@@ -73,67 +70,56 @@
         .security-options {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            margin-bottom: 25px;
+            gap: 1rem;
         }
         
         .security-option {
             display: flex;
             align-items: center;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            gap: 1rem;
+            padding: 1rem;
             border: 1px solid #eee;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
         }
         
         .security-option:hover {
-            background-color: #f0f0f0;
-            transform: translateY(-2px);
+            border-color: var(--primary-color, #4CAF50);
+            background: #f0f7f0;
+        }
+        
+        .security-option.selected {
+            border-color: var(--primary-color, #4CAF50);
+            background: #f0f7f0;
         }
         
         .security-option-icon {
             font-size: 1.5rem;
-            margin-right: 15px;
-            width: 30px;
-            text-align: center;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         
         .security-option-text {
             flex: 1;
-            text-align: left;
         }
         
         .security-option-title {
-            font-weight: 600;
             margin: 0;
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
         
         .security-option-description {
+            margin: 0.25rem 0 0;
             color: #666;
-            margin: 5px 0 0 0;
-            font-size: 0.85rem;
-        }
-        
-        .btn-continue {
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            background-color: var(--primary-color, #4CAF50);
-            color: white;
-            width: 100%;
-        }
-        
-        .btn-continue:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
         }
         
         #pin-setup, #password-setup, #biometric-setup {
@@ -237,15 +223,9 @@
                         <p class="security-option-description">Usa tu huella digital para un acceso más seguro</p>
                     </div>
                 </div>
-                
-                <div class="security-option" id="option-none">
-                    <div class="security-option-icon">🚫</div>
-                    <div class="security-option-text">
-                        <h3 class="security-option-title">Sin Seguridad Adicional</h3>
-                        <p class="security-option-description">Accede directamente sin verificación adicional</p>
-                    </div>
-                </div>
             </div>
+            
+            <button id="btn-back" class="btn-secondary" style="margin-top: 1rem; width: 100%;">Volver atrás</button>
             
             <!-- Configuración de PIN -->
             <div id="pin-setup">
@@ -281,25 +261,23 @@
                 </div>
             </div>
             
-            <!-- Configuración de Biometría -->
+            <!-- Configuración de Huella Digital -->
             <div id="biometric-setup">
-                <h3>Configura tu Huella Digital</h3>
+                <h3>Configura la Huella Digital</h3>
                 <div class="setup-form">
-                    <p>Toca el botón para registrar tu huella digital:</p>
                     <div id="fingerprint-button" class="biometric-button">
                         <span class="fingerprint-icon">👆</span>
-                        <span>Registrar Huella Digital</span>
+                        <span>Toca para configurar la huella digital</span>
                     </div>
-                    <p id="biometric-status"></p>
                     <p id="biometric-error" class="error-message"></p>
-                    <button id="save-biometric" class="btn-continue" disabled>Continuar</button>
+                    <button id="save-biometric" class="btn-continue">Guardar Configuración</button>
                 </div>
             </div>
             
             <button id="btn-continue" class="btn-continue" style="display: none;">Continuar a la Aplicación</button>
         </div>
     </div>
-
+    
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
@@ -322,42 +300,63 @@
             userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
             localStorage.setItem('current_user_prefix', userPrefix);
             
-            console.log("Usuario cargado:", userName);
-            console.log("ID de usuario:", userId);
-            console.log("Prefijo de usuario:", userPrefix);
-            
             // Verificar si el usuario ya tiene configuración de seguridad
             const hasSecurityConfig = localStorage.getItem(`${userPrefix}_auth_type`);
+            const isChanging = window.location.search.includes('change=true');
             
-            // Si ya tiene configuración y no es un usuario nuevo, redirigir a pin.html
-            if (hasSecurityConfig && hasSecurityConfig !== 'none') {
+            // Si ya tiene configuración y no es un cambio, redirigir a pin.html
+            if (hasSecurityConfig && !isChanging) {
                 window.location.href = 'pin.html';
                 return;
+            }
+
+            // Si estamos cambiando la configuración, mostrar diálogo de confirmación
+            if (isChanging) {
+                const currentMethod = localStorage.getItem(`${userPrefix}_auth_type`);
+                const methodNames = {
+                    'pin': 'PIN',
+                    'password': 'contraseña',
+                    'biometric': 'huella digital'
+                };
+                const confirmChange = confirm(`Estás a punto de cambiar tu método de seguridad actual (${methodNames[currentMethod] || 'desconocido'}). ¿Deseas continuar?`);
+                if (!confirmChange) {
+                    window.location.href = 'settings.html';
+                    return;
+                }
             }
             
             if (userName) document.getElementById('user-name').textContent = userName;
             if (userEmail) document.getElementById('user-email').textContent = userEmail;
             if (userPhoto) document.getElementById('user-avatar').src = userPhoto;
             
-            // Configurar event listeners para las opciones de seguridad
+            // Configurar event listeners
             document.getElementById('option-pin').addEventListener('click', () => showSetupForm('pin'));
             document.getElementById('option-password').addEventListener('click', () => showSetupForm('password'));
             document.getElementById('option-biometric').addEventListener('click', () => showSetupForm('biometric'));
-            document.getElementById('option-none').addEventListener('click', () => setupNoSecurity());
             
-            // Configurar event listeners para los formularios
             document.getElementById('save-pin').addEventListener('click', savePin);
             document.getElementById('save-password').addEventListener('click', savePassword);
             document.getElementById('fingerprint-button').addEventListener('click', setupBiometric);
             document.getElementById('save-biometric').addEventListener('click', saveBiometric);
             document.getElementById('btn-continue').addEventListener('click', continueToApp);
+            document.getElementById('btn-back').addEventListener('click', goBack);
             
-            // Configurar inputs de PIN para saltar al siguiente
             setupPinInputs();
-            
-            // Cargar idioma
             loadLanguage();
+
+            // Si estamos cambiando la configuración, limpiar la anterior
+            if (isChanging) {
+                clearPreviousSecurityConfig();
+            }
         });
+
+        // Limpiar configuración de seguridad anterior
+        function clearPreviousSecurityConfig() {
+            localStorage.removeItem(`${userPrefix}_pin`);
+            localStorage.removeItem(`${userPrefix}_password`);
+            localStorage.removeItem(`${userPrefix}_biometric_enabled`);
+            sessionStorage.removeItem('pin_ok');
+        }
         
         // Cargar y aplicar idioma
         function loadLanguage() {
@@ -377,8 +376,6 @@
                     passwordDesc: 'Establece una contraseña personalizada',
                     biometricOption: 'Huella Digital',
                     biometricDesc: 'Usa tu huella digital para un acceso más seguro',
-                    noneOption: 'Sin Seguridad Adicional',
-                    noneDesc: 'Accede directamente sin verificación adicional',
                     continueBtn: 'Continuar a la Aplicación'
                 },
                 'en': {
@@ -390,35 +387,7 @@
                     passwordDesc: 'Set a custom password',
                     biometricOption: 'Fingerprint',
                     biometricDesc: 'Use your fingerprint for more secure access',
-                    noneOption: 'No Additional Security',
-                    noneDesc: 'Access directly without additional verification',
                     continueBtn: 'Continue to App'
-                },
-                'pt': {
-                    title: 'Opções de Segurança',
-                    subtitle: 'Escolha como deseja proteger sua conta',
-                    pinOption: 'PIN',
-                    pinDesc: 'Configure um código PIN de 4 dígitos para acesso rápido',
-                    passwordOption: 'Senha',
-                    passwordDesc: 'Defina uma senha personalizada',
-                    biometricOption: 'Impressão Digital',
-                    biometricDesc: 'Use sua impressão digital para um acesso mais seguro',
-                    noneOption: 'Sem Segurança Adicional',
-                    noneDesc: 'Acesse diretamente sem verificação adicional',
-                    continueBtn: 'Continuar para o Aplicativo'
-                },
-                'fr': {
-                    title: 'Options de Sécurité',
-                    subtitle: 'Choisissez comment protéger votre compte',
-                    pinOption: 'PIN',
-                    pinDesc: 'Configurez un code PIN à 4 chiffres pour un accès rapide',
-                    passwordOption: 'Mot de passe',
-                    passwordDesc: 'Définissez un mot de passe personnalisé',
-                    biometricOption: 'Empreinte Digitale',
-                    biometricDesc: 'Utilisez votre empreinte digitale pour un accès plus sécurisé',
-                    noneOption: 'Sans Sécurité Supplémentaire',
-                    noneDesc: 'Accédez directement sans vérification supplémentaire',
-                    continueBtn: 'Continuer vers l\'Application'
                 }
             };
             
@@ -435,8 +404,6 @@
             document.querySelector('#option-password .security-option-description').textContent = t.passwordDesc;
             document.querySelector('#option-biometric .security-option-title').textContent = t.biometricOption;
             document.querySelector('#option-biometric .security-option-description').textContent = t.biometricDesc;
-            document.querySelector('#option-none .security-option-title').textContent = t.noneOption;
-            document.querySelector('#option-none .security-option-description').textContent = t.noneDesc;
             
             // Botón de continuar
             document.getElementById('btn-continue').textContent = t.continueBtn;
@@ -458,11 +425,9 @@
             
             // Resaltar opción seleccionada
             document.querySelectorAll('.security-option').forEach(option => {
-                option.style.borderColor = '#eee';
-                option.style.backgroundColor = '#f9f9f9';
+                option.classList.remove('selected');
             });
-            document.getElementById(`option-${type}`).style.borderColor = 'var(--primary-color, #4CAF50)';
-            document.getElementById(`option-${type}`).style.backgroundColor = '#f0f7f0';
+            document.getElementById(`option-${type}`).classList.add('selected');
         }
         
         // Configurar inputs de PIN para saltar al siguiente
@@ -533,16 +498,9 @@
                 return;
             }
             
-            console.log("Guardando PIN:", pin);
-            console.log("Prefijo de usuario:", userPrefix);
-            
             // Guardar PIN con el prefijo correcto
-            localStorage.setItem(`${userPrefix}_pin_enabled`, 'true');
             localStorage.setItem(`${userPrefix}_auth_type`, 'pin');
             localStorage.setItem(`${userPrefix}_pin`, pin);
-            
-            console.log("PIN guardado:", localStorage.getItem(`${userPrefix}_pin`));
-            console.log("Auth type guardado:", localStorage.getItem(`${userPrefix}_auth_type`));
             
             // Mostrar mensaje de éxito y botón para continuar
             errorElement.textContent = '';
@@ -569,15 +527,9 @@
                 return;
             }
             
-            console.log("Guardando contraseña");
-            console.log("Prefijo de usuario:", userPrefix);
-            
             // Guardar contraseña con el prefijo correcto
-            localStorage.setItem(`${userPrefix}_pin_enabled`, 'true'); // Reutilizamos el mismo flag
             localStorage.setItem(`${userPrefix}_auth_type`, 'password');
             localStorage.setItem(`${userPrefix}_password`, password);
-            
-            console.log("Auth type guardado:", localStorage.getItem(`${userPrefix}_auth_type`));
             
             // Mostrar mensaje de éxito y botón para continuar
             errorElement.textContent = '';
@@ -589,62 +541,31 @@
         
         // Configurar biometría
         function setupBiometric() {
-            const statusElement = document.getElementById('biometric-status');
+            // Aquí iría la lógica para configurar la huella digital
+            // Por ahora solo simulamos el proceso
             const errorElement = document.getElementById('biometric-error');
-            const saveButton = document.getElementById('save-biometric');
             
-            // Verificar si la API Web Authentication está disponible
-            if (!window.PublicKeyCredential) {
+            if (!navigator.credentials || !window.PublicKeyCredential) {
                 errorElement.textContent = 'Tu dispositivo no soporta autenticación biométrica';
                 return;
             }
             
-            // Verificar si el dispositivo soporta autenticación biométrica
-            PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
-                .then(available => {
-                    if (!available) {
-                        errorElement.textContent = 'Tu dispositivo no tiene sensor de huellas configurado';
-                        return;
-                    }
-                    
-                    // Aquí iría la lógica para registrar la huella digital
-                    // Este es un ejemplo simplificado, en una implementación real
-                    // se usaría la API Web Authentication completa
-                    
-                    statusElement.className = 'success-message';
-                    statusElement.textContent = 'Huella registrada correctamente';
-                    
-                    // Habilitar botón de guardar
-                    saveButton.disabled = false;
-                })
-                .catch(err => {
-                    errorElement.textContent = 'Error al verificar soporte biométrico: ' + err.message;
-                });
+            // Simular proceso exitoso
+            localStorage.setItem(`${userPrefix}_auth_type`, 'biometric');
+            localStorage.setItem(`${userPrefix}_biometric_enabled`, 'true');
+            
+            errorElement.textContent = '';
+            errorElement.className = 'success-message';
+            errorElement.textContent = 'Huella digital configurada correctamente';
+            
+            document.getElementById('btn-continue').style.display = 'block';
         }
         
         // Guardar configuración biométrica
         function saveBiometric() {
-            // Guardar preferencia de autenticación biométrica
-            localStorage.setItem(`${userPrefix}_pin_enabled`, 'true'); // Reutilizamos el mismo flag
-            localStorage.setItem(`${userPrefix}_auth_type`, 'biometric');
-            
-            // Mostrar botón para continuar
+            // La configuración ya se guardó en setupBiometric()
+            // Este método solo maneja la finalización del proceso
             document.getElementById('btn-continue').style.display = 'block';
-        }
-        
-        // Configurar sin seguridad adicional
-        function setupNoSecurity() {
-            console.log("Configurando sin seguridad adicional");
-            console.log("Prefijo de usuario:", userPrefix);
-            
-            // Deshabilitar PIN y otras opciones de seguridad
-            localStorage.setItem(`${userPrefix}_pin_enabled`, 'false');
-            localStorage.removeItem(`${userPrefix}_pin`);
-            localStorage.removeItem(`${userPrefix}_password`);
-            localStorage.setItem(`${userPrefix}_auth_type`, 'none');
-            
-            // Redirigir directamente a la aplicación
-            continueToApp();
         }
         
         // Continuar a la aplicación
@@ -654,6 +575,12 @@
             
             // Redirigir a la aplicación principal
             window.location.href = 'index.html';
+        }
+
+        // Función para volver atrás
+        function goBack() {
+            const isChanging = window.location.search.includes('change=true');
+            window.location.href = isChanging ? 'settings.html' : 'welcome.html';
         }
     </script>
 </body>

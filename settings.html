@@ -59,16 +59,9 @@
             <div class="settings-section">
                 <h3 id="security-title">Seguridad</h3>
                 <div class="form-group">
-                    <div class="night-mode-group">
-                        <span id="pin-label">PIN de seguridad</span>
-                            <label class="switch">
-                            <input type="checkbox" id="pin-toggle">
-                            <span class="slider"></span>
-                            </label>
-                    </div>
                     <button id="change-security" class="btn btn-secondary">Cambiar opciones de seguridad</button>
                 </div>
-                    </div>
+            </div>
 
                     <div class="settings-section">
                 <h3 id="data-title">Datos</h3>
@@ -176,7 +169,6 @@
                 safeUpdateText('theme-label', t.theme);
                 safeUpdateText('language-label', t.language);
                 safeUpdateText('security-title', t.security);
-                safeUpdateText('pin-label', t.securityPin);
                 safeUpdateText('change-security', t.changeSecurityOptions);
                 safeUpdateText('data-title', t.data);
                 safeUpdateText('export-data', t.exportData);
@@ -235,16 +227,6 @@
                 showNotification(t.languageChanged);
                 // No recargar la página, solo actualizar los textos
                 updatePageTexts(t);
-            });
-            
-            // Configurar toggle de PIN
-            const pinToggle = document.getElementById('pin-toggle');
-            const pinEnabled = localStorage.getItem('pin_enabled') !== 'false';
-            pinToggle.checked = pinEnabled;
-            
-            pinToggle.addEventListener('change', function() {
-                localStorage.setItem('pin_enabled', this.checked);
-                showNotification(this.checked ? t.pinEnabled : t.pinDisabled);
             });
             
             // Configurar botón de cambio de seguridad

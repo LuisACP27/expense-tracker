@@ -170,12 +170,108 @@
             text-decoration: underline;
             cursor: pointer;
         }
+        .error-message {
+            color: #f44336;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .user-name {
+            font-weight: 600;
+            margin: 0;
+        }
+        .user-email {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .btn-continue {
+            background: var(--primary-color, #4CAF50);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .btn-continue:hover {
+            opacity: 0.9;
+        }
+        .btn-continue:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .not-your-account {
+            margin-top: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .not-your-account a {
+            color: var(--primary-color, #4CAF50);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <div class="pin-container">
-        <div class="pin-card" id="pin-card">
-            <!-- El contenido se genera por JS -->
+        <div class="pin-card">
+            <div class="user-info">
+                <img id="user-avatar" src="https://via.placeholder.com/50" alt="Avatar" class="user-avatar">
+                <div>
+                    <p id="user-name" class="user-name">Nombre de Usuario</p>
+                    <p id="user-email" class="user-email">usuario@ejemplo.com</p>
+                </div>
+            </div>
+
+            <!-- Interfaz de PIN -->
+            <div id="pin-interface" style="display: none;">
+                <h1 class="pin-title">Ingresa tu PIN</h1>
+                <p class="pin-desc">Ingresa el PIN de 4 dígitos para acceder</p>
+                <input type="password" id="pin-input" class="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+                <p id="pin-error" class="error-message"></p>
+                <button id="verify-pin" class="btn-continue">Acceder</button>
+            </div>
+
+            <!-- Interfaz de Contraseña -->
+            <div id="password-interface" style="display: none;">
+                <h1 class="pin-title">Ingresa tu Contraseña</h1>
+                <p class="pin-desc">Ingresa tu contraseña para acceder</p>
+                <input type="password" id="password-input" class="password-input" placeholder="Contraseña">
+                <p id="password-error" class="error-message"></p>
+                <button id="verify-password" class="btn-continue">Acceder</button>
+            </div>
+
+            <!-- Interfaz de Huella Digital -->
+            <div id="biometric-interface" style="display: none;">
+                <h1 class="pin-title">Autenticación Biométrica</h1>
+                <p class="pin-desc">Usa tu huella digital para acceder</p>
+                <div id="fingerprint-button" class="biometric-button">
+                    <span class="fingerprint-icon">👆</span>
+                    <span>Toca para usar tu huella digital</span>
+                </div>
+                <p id="biometric-error" class="error-message"></p>
+            </div>
+
+            <p class="not-your-account">
+                ¿No es tu cuenta? <a href="welcome.html">Cambiar de cuenta</a>
+            </p>
         </div>
     </div>
 
@@ -187,453 +283,127 @@
     <script src="js/firebase-config.js"></script>
 
     <script>
-    // Verificar si el usuario está autenticado
-    const userId = localStorage.getItem('user_id');
-    const userName = localStorage.getItem('user_name');
-    const userEmail = localStorage.getItem('user_email');
-    const userPhoto = localStorage.getItem('user_photo');
-    
-    // Obtener el prefijo único para este usuario
-    const userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
-    
-    // Usar el prefijo para obtener los datos específicos del usuario
-    let authType = localStorage.getItem(`${userPrefix}_auth_type`);
-    
-    // Si no existe con el nuevo formato, intentar con el formato antiguo
-    if (!authType) {
-        authType = localStorage.getItem('auth_type');
-        if (authType) {
-            // Migrar al nuevo formato
-            console.log("Migrando tipo de autenticación del formato antiguo al nuevo");
-            localStorage.setItem(`${userPrefix}_auth_type`, authType);
-        }
-    }
-    
-    console.log("Usuario:", userName);
-    console.log("ID:", userId);
-    console.log("Prefijo:", userPrefix);
-    console.log("Tipo de autenticación:", authType);
+        // Variable global para el prefijo del usuario
+        let userPrefix = '';
 
-    const pinCard = document.getElementById('pin-card');
-    
-    // Cargar idioma
-    const userLanguage = localStorage.getItem('app_language') || 'es';
-    
-    // Traducciones
-    const translations = {
-        'es': {
-            welcome: 'Bienvenido de nuevo',
-            enterPin: 'Ingresa tu PIN',
-            enterPinDesc: 'Introduce el PIN de 4 dígitos para acceder',
-            enterPassword: 'Ingresa tu Contraseña',
-            enterPasswordDesc: 'Introduce tu contraseña para acceder',
-            biometricAuth: 'Autenticación Biométrica',
-            biometricDesc: 'Utiliza tu huella digital para acceder',
-            fingerprintButton: 'Autenticar con Huella Digital',
-            accessBtn: 'Acceder',
-            usePin: 'Usar PIN',
-            usePassword: 'Usar Contraseña',
-            useFingerprint: 'Usar Huella',
-            loginGoogle: 'Iniciar sesión con Google',
-            pinError: 'PIN incorrecto. Intenta de nuevo.',
-            passwordError: 'Contraseña incorrecta. Intenta de nuevo.',
-            notYourAccount: '¿No es tu cuenta?'
-        },
-        'en': {
-            welcome: 'Welcome back',
-            enterPin: 'Enter your PIN',
-            enterPinDesc: 'Enter the 4-digit PIN to access',
-            enterPassword: 'Enter your Password',
-            enterPasswordDesc: 'Enter your password to access',
-            biometricAuth: 'Biometric Authentication',
-            biometricDesc: 'Use your fingerprint to access',
-            fingerprintButton: 'Authenticate with Fingerprint',
-            accessBtn: 'Access',
-            usePin: 'Use PIN',
-            usePassword: 'Use Password',
-            useFingerprint: 'Use Fingerprint',
-            loginGoogle: 'Sign in with Google',
-            pinError: 'Incorrect PIN. Try again.',
-            passwordError: 'Incorrect password. Try again.',
-            notYourAccount: 'Not your account?'
-        },
-        'pt': {
-            welcome: 'Bem-vindo de volta',
-            enterPin: 'Digite seu PIN',
-            enterPinDesc: 'Digite o PIN de 4 dígitos para acessar',
-            enterPassword: 'Digite sua Senha',
-            enterPasswordDesc: 'Digite sua senha para acessar',
-            biometricAuth: 'Autenticação Biométrica',
-            biometricDesc: 'Use sua impressão digital para acessar',
-            fingerprintButton: 'Autenticar com Impressão Digital',
-            accessBtn: 'Acessar',
-            usePin: 'Usar PIN',
-            usePassword: 'Usar Senha',
-            useFingerprint: 'Usar Impressão Digital',
-            loginGoogle: 'Entrar com Google',
-            pinError: 'PIN incorreto. Tente novamente.',
-            passwordError: 'Senha incorreta. Tente novamente.',
-            notYourAccount: 'Não é sua conta?'
-        },
-        'fr': {
-            welcome: 'Bon retour',
-            enterPin: 'Entrez votre code PIN',
-            enterPinDesc: 'Entrez le code PIN à 4 chiffres pour accéder',
-            enterPassword: 'Entrez votre mot de passe',
-            enterPasswordDesc: 'Entrez votre mot de passe pour accéder',
-            biometricAuth: 'Authentification Biométrique',
-            biometricDesc: 'Utilisez votre empreinte digitale pour accéder',
-            fingerprintButton: 'Authentifier avec Empreinte Digitale',
-            accessBtn: 'Accéder',
-            usePin: 'Utiliser PIN',
-            usePassword: 'Utiliser Mot de Passe',
-            useFingerprint: 'Utiliser Empreinte',
-            loginGoogle: 'Se connecter avec Google',
-            pinError: 'Code PIN incorrect. Réessayez.',
-            passwordError: 'Mot de passe incorrect. Réessayez.',
-            notYourAccount: 'Ce n\'est pas votre compte?'
-        }
-    };
-    
-    // Obtener traducciones según el idioma
-    const t = translations[userLanguage] || translations['es'];
-    
-    // Establecer idioma del documento
-    document.documentElement.lang = userLanguage;
-    
-    // Mostrar interfaz según el tipo de autenticación
-    function renderAuthInterface() {
-        // Información del usuario
-        const userInfoHTML = userId ? `
-            <div class="user-info">
-                <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
-                <div>
-                    <p class="user-name">${t.welcome}, ${userName || 'Usuario'}</p>
-                    <p class="user-email">${userEmail || ''}</p>
-                </div>
-            </div>
-        ` : '';
-        
-        console.log("Renderizando interfaz de autenticación");
-        console.log("Tipo de autenticación:", authType);
-        console.log("Prefijo de usuario:", userPrefix);
-        console.log("PIN guardado:", localStorage.getItem(`${userPrefix}_pin`));
-        console.log("Contraseña guardada:", localStorage.getItem(`${userPrefix}_password`) ? "Existe" : "No existe");
-        
-        // Renderizar interfaz según tipo de autenticación
-        switch(authType) {
-            case 'pin':
-                console.log("Mostrando interfaz de PIN");
-                renderPinInterface(userInfoHTML);
-                break;
-            case 'password':
-                console.log("Mostrando interfaz de contraseña");
-                renderPasswordInterface(userInfoHTML);
-                break;
-            case 'biometric':
-                console.log("Mostrando interfaz biométrica");
-                renderBiometricInterface(userInfoHTML);
-                break;
-            case 'none':
-                // Sin seguridad adicional, redirigir directamente
-                console.log("Sin seguridad adicional, redirigiendo directamente");
-                sessionStorage.setItem('pin_ok', '1');
-                window.location.href = 'index.html';
-                break;
-            default:
-                // Por defecto, mostrar PIN
-                console.log("Tipo de autenticación no reconocido, mostrando PIN por defecto");
-                renderPinInterface(userInfoHTML);
-        }
-    }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar información del usuario
+            const userId = localStorage.getItem('user_id');
+            const userName = localStorage.getItem('user_name');
+            const userEmail = localStorage.getItem('user_email');
+            const userPhoto = localStorage.getItem('user_photo');
 
-    // Interfaz de PIN
-    function renderPinInterface(userInfoHTML) {
-        pinCard.innerHTML = `
-            ${userInfoHTML}
-            <div class="pin-title">${t.enterPin}</div>
-            <div class="pin-desc">${t.enterPinDesc}</div>
-            <input type="password" maxlength="4" pattern="\\d{4}" class="pin-input" id="enter-pin" autocomplete="off" inputmode="numeric" />
-            <br>
-            <button class="pin-btn" id="enter-pin-btn">${t.accessBtn}</button>
-            <div class="pin-error" id="pin-error" style="display:none;"></div>
-            ${renderAuthOptions()}
-            ${renderChangeAccount()}
-        `;
-        
-        document.getElementById('enter-pin-btn').addEventListener('click', validatePin);
-        document.getElementById('enter-pin').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') validatePin();
-        });
-        setupEventListeners();
-    }
+            // Obtener o crear el prefijo único para este usuario
+            userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+            localStorage.setItem('current_user_prefix', userPrefix);
 
-    // Interfaz de contraseña
-    function renderPasswordInterface(userInfoHTML) {
-        pinCard.innerHTML = `
-            ${userInfoHTML}
-            <div class="pin-title">${t.enterPassword}</div>
-            <div class="pin-desc">${t.enterPasswordDesc}</div>
-            <input type="password" class="password-input" id="enter-password" autocomplete="off" />
-            <br>
-            <button class="pin-btn" id="enter-password-btn">${t.accessBtn}</button>
-            <div class="pin-error" id="pin-error" style="display:none;"></div>
-            ${renderAuthOptions()}
-            ${renderChangeAccount()}
-        `;
-        
-        document.getElementById('enter-password-btn').addEventListener('click', validatePassword);
-        document.getElementById('enter-password').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') validatePassword();
-        });
-        setupEventListeners();
-    }
+            // Actualizar información del usuario en la UI
+            if (userName) document.getElementById('user-name').textContent = userName;
+            if (userEmail) document.getElementById('user-email').textContent = userEmail;
+            if (userPhoto) document.getElementById('user-avatar').src = userPhoto;
 
-    // Interfaz biométrica
-    function renderBiometricInterface(userInfoHTML) {
-        pinCard.innerHTML = `
-            ${userInfoHTML}
-            <div class="pin-title">${t.biometricAuth}</div>
-            <div class="pin-desc">${t.biometricDesc}</div>
-            <div id="fingerprint-button" class="biometric-button">
-                <span class="fingerprint-icon">👆</span>
-                <span>${t.fingerprintButton}</span>
-            </div>
-            <div class="pin-error" id="pin-error" style="display:none;"></div>
-            ${renderAuthOptions()}
-            ${renderChangeAccount()}
-        `;
-        
-        document.getElementById('fingerprint-button').addEventListener('click', authenticateBiometric);
-        setupEventListeners();
-    }
+            // Obtener el tipo de autenticación
+            const authType = localStorage.getItem(`${userPrefix}_auth_type`);
 
-    // Opciones de autenticación alternativas
-    function renderAuthOptions() {
-        // Solo mostrar opciones de cambio si hay múltiples métodos configurados
-        const hasPin = localStorage.getItem(`${userPrefix}_pin`);
-        const hasPassword = localStorage.getItem(`${userPrefix}_password`);
-        
-        let optionsHTML = '<div class="auth-options">';
-        
-        if (authType !== 'pin' && hasPin) {
-            optionsHTML += `<button class="auth-option" id="switch-to-pin">${t.usePin}</button>`;
-        }
-        
-        if (authType !== 'password' && hasPassword) {
-            optionsHTML += `<button class="auth-option" id="switch-to-password">${t.usePassword}</button>`;
-        }
-        
-        if (authType !== 'biometric' && localStorage.getItem(`${userPrefix}_auth_type`) === 'biometric') {
-            optionsHTML += `<button class="auth-option" id="switch-to-biometric">${t.useFingerprint}</button>`;
-        }
-        
-        optionsHTML += '</div>';
-        
-        return optionsHTML;
-    }
-    
-    // Enlace para cambiar de cuenta
-    function renderChangeAccount() {
-        return `
-            <div class="change-account">
-                <a href="#" id="change-account">${t.notYourAccount}</a>
-            </div>
-        `;
-    }
-
-    // Validar PIN
-    function validatePin() {
-        const pin = document.getElementById('enter-pin').value.trim();
-        // Usar el prefijo correcto para obtener el PIN guardado
-        let savedPin = localStorage.getItem(`${userPrefix}_pin`);
-        
-        // Si no existe con el nuevo formato, intentar con el formato antiguo
-        if (!savedPin) {
-            savedPin = localStorage.getItem('user_pin');
-            if (savedPin) {
-                // Migrar al nuevo formato
-                console.log("Migrando PIN del formato antiguo al nuevo");
-                localStorage.setItem(`${userPrefix}_pin`, savedPin);
+            // Mostrar la interfaz correspondiente
+            switch(authType) {
+                case 'pin':
+                    setupPinInterface();
+                    break;
+                case 'password':
+                    setupPasswordInterface();
+                    break;
+                case 'biometric':
+                    setupBiometricInterface();
+                    break;
+                default:
+                    // Si no hay método de autenticación configurado, redirigir a security-options.html
+                    window.location.href = 'security-options.html';
             }
-        }
-        
-        console.log("PIN ingresado:", pin);
-        console.log("PIN guardado:", savedPin);
-        console.log("Prefijo de usuario:", userPrefix);
-        
-        if (pin === savedPin) {
-            sessionStorage.setItem('pin_ok', '1');
-            window.location.href = 'index.html';
-        } else {
-            showError(t.pinError);
-        }
-    }
+        });
 
-    // Validar contraseña
-    function validatePassword() {
-        const password = document.getElementById('enter-password').value;
-        // Usar el prefijo correcto para obtener la contraseña guardada
-        let savedPassword = localStorage.getItem(`${userPrefix}_password`);
-        
-        // Si no existe con el nuevo formato, intentar con el formato antiguo
-        if (!savedPassword) {
-            savedPassword = localStorage.getItem('user_password');
-            if (savedPassword) {
-                // Migrar al nuevo formato
-                console.log("Migrando contraseña del formato antiguo al nuevo");
-                localStorage.setItem(`${userPrefix}_password`, savedPassword);
-            }
-        }
-        
-        console.log("Contraseña ingresada:", password ? "***" : "vacía");
-        console.log("Contraseña guardada existe:", savedPassword ? "Sí" : "No");
-        console.log("Prefijo de usuario:", userPrefix);
-        
-        if (password === savedPassword) {
-            sessionStorage.setItem('pin_ok', '1');
-            window.location.href = 'index.html';
-        } else {
-            showError(t.passwordError);
-        }
-    }
+        function setupPinInterface() {
+            document.getElementById('pin-interface').style.display = 'block';
+            const pinInput = document.getElementById('pin-input');
+            const verifyButton = document.getElementById('verify-pin');
+            const errorElement = document.getElementById('pin-error');
 
-    // Autenticación biométrica
-    function authenticateBiometric() {
-        // Verificar si la API Web Authentication está disponible
-        if (!window.PublicKeyCredential) {
-            showError('Tu dispositivo no soporta autenticación biométrica');
-            return;
-        }
-        
-        // Verificar si el dispositivo soporta autenticación biométrica
-        PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
-            .then(available => {
-                if (!available) {
-                    showError('Tu dispositivo no tiene sensor de huellas configurado');
-                    return;
+            pinInput.addEventListener('input', () => {
+                if (pinInput.value.length === 4) {
+                    verifyPin();
                 }
-                
-                // Aquí iría la lógica real de autenticación biométrica
-                // Este es un ejemplo simplificado
-                
-                // Simulamos una autenticación exitosa
-                setTimeout(() => {
+            });
+
+            verifyButton.addEventListener('click', verifyPin);
+
+            function verifyPin() {
+                const enteredPin = pinInput.value;
+                const storedPin = localStorage.getItem(`${userPrefix}_pin`);
+
+                if (enteredPin === storedPin) {
                     sessionStorage.setItem('pin_ok', '1');
                     window.location.href = 'index.html';
-                }, 1000);
-            })
-            .catch(err => {
-                showError('Error al verificar soporte biométrico: ' + err.message);
-            });
-    }
-    
-    // Configurar event listeners
-    function setupEventListeners() {
-        // Cambiar a PIN
-        const switchToPinBtn = document.getElementById('switch-to-pin');
-        if (switchToPinBtn) {
-            switchToPinBtn.addEventListener('click', () => {
-                renderPinInterface(getUserInfoHTML());
-            });
+                } else {
+                    errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
+                    errorElement.style.display = 'block';
+                    pinInput.value = '';
+                }
+            }
         }
-        
-        // Cambiar a contraseña
-        const switchToPasswordBtn = document.getElementById('switch-to-password');
-        if (switchToPasswordBtn) {
-            switchToPasswordBtn.addEventListener('click', () => {
-                renderPasswordInterface(getUserInfoHTML());
-            });
-        }
-        
-        // Cambiar a biométrico
-        const switchToBiometricBtn = document.getElementById('switch-to-biometric');
-        if (switchToBiometricBtn) {
-            switchToBiometricBtn.addEventListener('click', () => {
-                renderBiometricInterface(getUserInfoHTML());
-            });
-        }
-        
-        // Cambiar de cuenta
-        const changeAccountBtn = document.getElementById('change-account');
-        if (changeAccountBtn) {
-            changeAccountBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                clearUserData();
-            });
-        }
-    }
-    
-    // Obtener HTML de información del usuario
-    function getUserInfoHTML() {
-        return userId ? `
-            <div class="user-info">
-                <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
-                <div>
-                    <p class="user-name">${t.welcome}, ${userName || 'Usuario'}</p>
-                    <p class="user-email">${userEmail || ''}</p>
-                </div>
-            </div>
-        ` : '';
-    }
-    
-    // Limpiar datos de usuario para cambiar de cuenta
-    function clearUserData() {
-        // Limpiar datos específicos del usuario actual
-        if (userPrefix) {
-            localStorage.removeItem(`${userPrefix}_pin`);
-            localStorage.removeItem(`${userPrefix}_password`);
-            localStorage.removeItem(`${userPrefix}_auth_type`);
-        }
-        
-        // Limpiar datos de autenticación general
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('user_name');
-        localStorage.removeItem('user_email');
-        localStorage.removeItem('user_photo');
-        localStorage.removeItem('current_user_prefix');
-        
-        // Limpiar datos de sesión
-        sessionStorage.removeItem('pin_ok');
-        
-        // Mantener el idioma seleccionado
-        // Redirigir a la página de bienvenida
-        window.location.href = 'welcome.html';
-    }
 
-    // Mostrar mensaje de error
-    function showError(msg) {
-        const err = document.getElementById('pin-error');
-        err.textContent = msg;
-        err.style.display = 'block';
-    }
+        function setupPasswordInterface() {
+            document.getElementById('password-interface').style.display = 'block';
+            const passwordInput = document.getElementById('password-input');
+            const verifyButton = document.getElementById('verify-password');
+            const errorElement = document.getElementById('password-error');
 
-    // Lógica principal
-    let pinEnabled = localStorage.getItem(`${userPrefix}_pin_enabled`);
-    
-    // Si no existe con el nuevo formato, intentar con el formato antiguo
-    if (pinEnabled === null) {
-        pinEnabled = localStorage.getItem('pin_enabled');
-        if (pinEnabled !== null) {
-            // Migrar al nuevo formato
-            console.log("Migrando configuración de PIN habilitado del formato antiguo al nuevo");
-            localStorage.setItem(`${userPrefix}_pin_enabled`, pinEnabled);
+            verifyButton.addEventListener('click', verifyPassword);
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    verifyPassword();
+                }
+            });
+
+            function verifyPassword() {
+                const enteredPassword = passwordInput.value;
+                const storedPassword = localStorage.getItem(`${userPrefix}_password`);
+
+                if (enteredPassword === storedPassword) {
+                    sessionStorage.setItem('pin_ok', '1');
+                    window.location.href = 'index.html';
+                } else {
+                    errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+                    errorElement.style.display = 'block';
+                    passwordInput.value = '';
+                }
+            }
         }
-    }
-    
-    // Por defecto habilitado si no hay configuración
-    pinEnabled = pinEnabled !== 'false';
-    
-    console.log("PIN habilitado:", pinEnabled);
-    
-    // Si el PIN está deshabilitado, ir directamente a index.html
-    if (!pinEnabled) {
-        console.log("PIN deshabilitado, accediendo directamente");
-        sessionStorage.setItem('pin_ok', '1');
-        window.location.href = 'index.html';
-    } else {
-        renderAuthInterface();
-    }
+
+        function setupBiometricInterface() {
+            document.getElementById('biometric-interface').style.display = 'block';
+            const fingerprintButton = document.getElementById('fingerprint-button');
+            const errorElement = document.getElementById('biometric-error');
+
+            fingerprintButton.addEventListener('click', async () => {
+                if (!navigator.credentials || !window.PublicKeyCredential) {
+                    errorElement.textContent = 'Tu dispositivo no soporta autenticación biométrica';
+                    errorElement.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    // Aquí iría la lógica real de autenticación biométrica
+                    // Por ahora, simulamos un proceso exitoso
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    sessionStorage.setItem('pin_ok', '1');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    errorElement.textContent = 'Error en la autenticación biométrica. Intenta de nuevo.';
+                    errorElement.style.display = 'block';
+                }
+            });
+        }
     </script>
 </body>
 </html> 

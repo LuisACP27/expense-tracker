@@ -3,12 +3,14 @@
 class Storage {
     constructor() {
         this.STORAGE_KEY = 'expense_tracker_data';
+        this.userPrefix = localStorage.getItem('current_user_prefix') || '';
         this.initializeStorage();
     }
 
     // Inicializar almacenamiento si no existe
     initializeStorage() {
-        if (!localStorage.getItem(this.STORAGE_KEY)) {
+        const storageKey = this.getUserStorageKey();
+        if (!localStorage.getItem(storageKey)) {
             const initialData = {
                 transactions: [],
                 categories: {
@@ -32,6 +34,17 @@ class Storage {
             };
             this.saveData(initialData);
         }
+    }
+
+    // Obtener la clave de almacenamiento para el usuario actual
+    getUserStorageKey() {
+        return this.userPrefix ? `${this.userPrefix}_${this.STORAGE_KEY}` : this.STORAGE_KEY;
+    }
+
+    // Actualizar el prefijo de usuario
+    setUserPrefix(prefix) {
+        this.userPrefix = prefix;
+        this.initializeStorage();
     }
 
     // Agregar una categoría
@@ -64,13 +77,15 @@ class Storage {
 
     // Obtener todos los datos
     getData() {
-        const data = localStorage.getItem(this.STORAGE_KEY);
+        const storageKey = this.getUserStorageKey();
+        const data = localStorage.getItem(storageKey);
         return data ? JSON.parse(data) : null;
     }
 
     // Guardar datos
     saveData(data) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        const storageKey = this.getUserStorageKey();
+        localStorage.setItem(storageKey, JSON.stringify(data));
     }
 
     // Obtener todas las transacciones
