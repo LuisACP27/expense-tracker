@@ -240,7 +240,10 @@ class ExpenseTracker {
     renderCategories(type = null) {
         const categorySelect = document.getElementById('category');
         const data = storage.getData();
-        if (!data || !data.categories) return;
+        if (!data || !data.categories) {
+            storage.initializeStorage();
+            data = storage.getData();
+        }
 
         // Limpiar opciones excepto la primera
         categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
@@ -292,7 +295,10 @@ class ExpenseTracker {
         const incomeList = document.getElementById('income-category-list');
         const expenseList = document.getElementById('expense-category-list');
         const data = storage.getData();
-        if (!data || !data.categories) return;
+        if (!data || !data.categories) {
+            storage.initializeStorage();
+            data = storage.getData();
+        }
 
         incomeList.innerHTML = '';
         expenseList.innerHTML = '';
