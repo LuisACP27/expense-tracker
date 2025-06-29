@@ -233,45 +233,14 @@ class ExpenseTracker {
     // Actualizar opciones de categoría según el tipo
     updateCategoryOptions() {
         const type = document.querySelector('input[name="type"]:checked').value;
-        const categorySelect = document.getElementById('category');
-        const data = storage.getData();
-        
-        if (!data || !data.categories) {
-            storage.initializeStorage();
-            data = storage.getData();
-        }
-
-        // Limpiar opciones excepto la primera
-        categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
-
-        // Mostrar solo las categorías del tipo seleccionado
-        if (data.categories[type] && data.categories[type].length > 0) {
-            data.categories[type].forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id;
-                option.textContent = `${cat.icon} ${cat.name}`;
-                categorySelect.appendChild(option);
-            });
-        } else {
-            // Si no hay categorías, agregar una opción deshabilitada
-            const option = document.createElement('option');
-            option.disabled = true;
-            option.textContent = 'No hay categorías disponibles';
-            categorySelect.appendChild(option);
-        }
-
-        // Resetear selección
-        categorySelect.selectedIndex = 0;
+        this.renderCategories(type);
     }
 
     // Renderizar categorías dinámicamente en el select
     renderCategories(type = null) {
         const categorySelect = document.getElementById('category');
         const data = storage.getData();
-        if (!data || !data.categories) {
-            storage.initializeStorage();
-            data = storage.getData();
-        }
+        if (!data || !data.categories) return;
 
         // Limpiar opciones excepto la primera
         categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
@@ -323,10 +292,7 @@ class ExpenseTracker {
         const incomeList = document.getElementById('income-category-list');
         const expenseList = document.getElementById('expense-category-list');
         const data = storage.getData();
-        if (!data || !data.categories) {
-            storage.initializeStorage();
-            data = storage.getData();
-        }
+        if (!data || !data.categories) return;
 
         incomeList.innerHTML = '';
         expenseList.innerHTML = '';

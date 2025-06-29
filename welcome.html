@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bienvenido - Mi Gestor Financiero</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bienvenido a Mi Gestor Financiero</title>
+    <link rel="stylesheet" href="css/styles.css" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
@@ -16,146 +16,170 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <style>
         .welcome-container {
-            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
             background: linear-gradient(135deg, var(--primary-color-light, #81c784), var(--primary-color, #4CAF50));
-            padding: 1rem;
         }
         
         .welcome-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 2rem;
-            max-width: 400px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
             width: 100%;
-            text-align: center;
-            box-sizing: border-box;
+            max-width: 400px;
+        }
+        
+        .app-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
         }
         
         .welcome-title {
-            font-size: 1.75rem;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
             color: var(--primary-color, #4CAF50);
-            margin-bottom: 0.5rem;
         }
         
         .welcome-subtitle {
+            font-size: 1rem;
+            margin-bottom: 30px;
             color: #666;
-            margin-bottom: 2rem;
         }
         
-        .google-btn {
+        .auth-buttons {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: #fff;
-            color: #333;
-            border: 1px solid #ddd;
-            padding: 12px 24px;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .btn-auth {
+            padding: 12px;
             border-radius: 8px;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-login {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+        }
+        
+        .btn-register {
+            background-color: #fff;
+            color: var(--primary-color, #4CAF50);
+            border: 2px solid var(--primary-color, #4CAF50);
+        }
+        
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .language-selector {
+            margin-bottom: 25px;
             width: 100%;
-            transition: background-color 0.3s, box-shadow 0.3s;
         }
         
-        .google-btn:hover {
-            background-color: #f8f8f8;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        .language-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #666;
+            text-align: left;
         }
         
-        .google-icon {
-            width: 24px;
-            height: 24px;
-        }
-        
-        .error-message {
-            color: #f44336;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            display: none;
+        .language-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+            font-size: 1rem;
+            color: #333;
         }
     </style>
 </head>
 <body>
     <div class="welcome-container">
         <div class="welcome-card">
+            <div class="app-logo">💰</div>
             <h1 class="welcome-title">Mi Gestor Financiero</h1>
-            <p class="welcome-subtitle">Inicia sesión para gestionar tus finanzas</p>
+            <p class="welcome-subtitle">Controla tus finanzas de manera fácil y segura</p>
             
-            <button id="google-login-btn" class="google-btn">
-                <img src="https://www.google.com/favicon.ico" alt="Google" class="google-icon">
-                <span>Continuar con Google</span>
-            </button>
+            <div class="language-selector">
+                <label for="language" class="language-label">Selecciona tu idioma:</label>
+                <select id="language" class="language-select">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                    <option value="pt">Português</option>
+                    <option value="fr">Français</option>
+                </select>
+            </div>
             
-            <p id="error-message" class="error-message"></p>
+            <div class="auth-buttons">
+                <button class="btn-auth btn-login" id="login-btn">Iniciar Sesión</button>
+                <button class="btn-auth btn-register" id="register-btn">Registrarse</button>
+            </div>
         </div>
     </div>
 
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <!-- Firebase Auth -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
-
+    <script src="js/firebase-debug.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Verificar si ya hay una sesión activa
-            const userId = localStorage.getItem('user_id');
-            const userPrefix = localStorage.getItem('current_user_prefix');
-            const hasAuthType = userPrefix ? localStorage.getItem(`${userPrefix}_auth_type`) : null;
+            // Cargar idioma por defecto (español)
+            const t = window.appLanguage.changeLanguage('es');
             
-            if (userId && userPrefix && hasAuthType) {
-                // Si ya hay una sesión y método de autenticación configurado, redirigir a pin.html
-                window.location.href = 'pin.html';
-                return;
+            // Aplicar tema por defecto
+            window.appTheme.applyCurrentTheme();
+            
+            // Función para actualizar textos
+            function updatePageTexts(t) {
+                document.querySelector('.welcome-title').textContent = t.welcomeTitle;
+                document.querySelector('.welcome-subtitle').textContent = t.welcomeSubtitle;
+                document.querySelector('.language-label').textContent = t.selectLanguage;
+                document.getElementById('login-btn').textContent = t.login;
+                document.getElementById('register-btn').textContent = t.register;
+                document.title = t.welcomeTitle;
             }
             
-            // Configurar botón de inicio de sesión con Google
-            const googleBtn = document.getElementById('google-login-btn');
-            if (googleBtn) {
-                googleBtn.addEventListener('click', handleGoogleLogin);
-            }
+            // Actualizar textos iniciales
+            updatePageTexts(t);
+            
+            // Configurar selector de idioma
+            const languageSelector = document.getElementById('language');
+            languageSelector.value = 'es'; // Siempre español por defecto en welcome
+            
+            languageSelector.addEventListener('change', function() {
+                const newLang = this.value;
+                const t = window.appLanguage.changeLanguage(newLang);
+                
+                // Guardar el idioma seleccionado para la sesión actual
+                sessionStorage.setItem('temp_language', newLang);
+                
+                // Actualizar textos
+                updatePageTexts(t);
+            });
+            
+            // Configurar botones de autenticación
+            document.getElementById('login-btn').addEventListener('click', () => {
+                window.location.href = 'auth.html?mode=login';
+            });
+            
+            document.getElementById('register-btn').addEventListener('click', () => {
+                window.location.href = 'auth.html?mode=register';
+            });
         });
-
-        // Función para manejar el inicio de sesión con Google
-        function handleGoogleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    const user = result.user;
-                    const userId = user.uid;
-                    const userPrefix = `user_${userId}`;
-                    
-                    // Guardar información del usuario
-                    localStorage.setItem('user_id', userId);
-                    localStorage.setItem('user_name', user.displayName);
-                    localStorage.setItem('user_email', user.email);
-                    localStorage.setItem('user_photo', user.photoURL);
-                    localStorage.setItem('current_user_prefix', userPrefix);
-
-                    // Verificar si el usuario ya existe
-                    const existingAuthType = localStorage.getItem(`${userPrefix}_auth_type`);
-                    
-                    if (existingAuthType) {
-                        // Usuario existente, redirigir a pin.html
-                        window.location.href = 'pin.html';
-                    } else {
-                        // Nuevo usuario, redirigir a opciones de seguridad
-                        window.location.href = 'security-options.html';
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error en autenticación:', error);
-                    const errorMessage = document.getElementById('error-message');
-                    errorMessage.textContent = 'Error al iniciar sesión con Google';
-                    errorMessage.style.display = 'block';
-                });
-        }
     </script>
 </body>
 </html> 

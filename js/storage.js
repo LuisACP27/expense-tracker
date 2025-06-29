@@ -2,25 +2,14 @@
 
 class Storage {
     constructor() {
+        this.STORAGE_KEY = 'expense_tracker_data';
+        this.userPrefix = localStorage.getItem('current_user_prefix') || '';
         this.initializeStorage();
-    }
-
-    // Obtener la clave de almacenamiento específica del usuario
-    getUserStorageKey() {
-        const userId = localStorage.getItem('user_id');
-        const userPrefix = localStorage.getItem('current_user_prefix');
-        if (!userId || !userPrefix) {
-            window.location.href = 'welcome.html';
-            return null;
-        }
-        return `${userPrefix}_data`;
     }
 
     // Inicializar almacenamiento si no existe
     initializeStorage() {
         const storageKey = this.getUserStorageKey();
-        if (!storageKey) return;
-
         if (!localStorage.getItem(storageKey)) {
             const initialData = {
                 transactions: [],
@@ -47,114 +36,121 @@ class Storage {
         }
     }
 
+    // Obtener la clave de almacenamiento para el usuario actual
+    getUserStorageKey() {
+        return this.userPrefix ? `${this.userPrefix}_${this.STORAGE_KEY}` : this.STORAGE_KEY;
+    }
+
+    // Actualizar el prefijo de usuario
+    setUserPrefix(prefix) {
+        this.userPrefix = prefix;
+        this.initializeStorage();
+    }
+
+    // Agregar una categoría
+    addCategory(type, category) {
+        const data = this.getData();
+        if (!data.categories[type]) {
+            data.categories[type] = [];
+        }
+        // Evitar duplicados por id
+        if (!data.categories[type].some(cat => cat.id === category.id)) {
+            data.categories[type].push(category);
+            this.saveData(data);
+            return true;
+        }
+        return false;
+    }
+
+    // Eliminar una categoría
+    deleteCategory(type, categoryId) {
+        const data = this.getData();
+        if (!data.categories[type]) return false;
+        const originalLength = data.categories[type].length;
+        data.categories[type] = data.categories[type].filter(cat => cat.id !== categoryId);
+        if (data.categories[type].length < originalLength) {
+            this.saveData(data);
+            return true;
+        }
+        return false;
+    }
+
+    // Obtener todos los datos
+    getData() {
+        const storageKey = this.getUserStorageKey();
+        const data = localStorage.getItem(storageKey);
+        return data ? JSON.parse(data) : null;
+    }
+
     // Guardar datos
     saveData(data) {
         const storageKey = this.getUserStorageKey();
-        if (!storageKey) return false;
-        try {
-            localStorage.setItem(storageKey, JSON.stringify(data));
-            return true;
-        } catch (error) {
-            console.error('Error al guardar datos:', error);
-            return false;
-        }
+        localStorage.setItem(storageKey, JSON.stringify(data));
     }
 
-    // Obtener datos
-    getData() {
-        const storageKey = this.getUserStorageKey();
-        if (!storageKey) return null;
-        try {
-            const data = localStorage.getItem(storageKey);
-            return data ? JSON.parse(data) : null;
-        } catch (error) {
-            console.error('Error al obtener datos:', error);
-            return null;
-        }
+    // Obtener todas las transacciones
+    getTransactions() {
+        const data = this.getData();
+        return data ? data.transactions : [];
     }
 
-    // Agregar transacción
+    // Agregar una transacción
     addTransaction(transaction) {
         const data = this.getData();
-        if (!data) return false;
-
-        // Generar ID único para la transacción
         transaction.id = Date.now().toString();
-        
-        // Agregar la transacción al inicio del array
-        data.transactions.unshift(transaction);
-        
-        return this.saveData(data);
+        transaction.createdAt = new Date().toISOString();
+        data.transactions.push(transaction);
+        this.saveData(data);
+        return transaction;
     }
 
-    // Eliminar transacción
-    deleteTransaction(transactionId) {
+    // Eliminar una transacción
+    deleteTransaction(id) {
         const data = this.getData();
-        if (!data) return false;
-
-        const index = data.transactions.findIndex(t => t.id === transactionId);
-        if (index === -1) return false;
-
-        data.transactions.splice(index, 1);
-        return this.saveData(data);
+        data.transactions = data.transactions.filter(t => t.id !== id);
+        this.saveData(data);
     }
 
     // Obtener transacciones filtradas
     getFilteredTransactions(type = 'all', month = 'all') {
-        const data = this.getData();
-        if (!data) return [];
-
-        let transactions = data.transactions;
-
+        let transactions = this.getTransactions();
+        
         // Filtrar por tipo
         if (type !== 'all') {
             transactions = transactions.filter(t => t.type === type);
         }
-
+        
         // Filtrar por mes
         if (month !== 'all') {
-            transactions = transactions.filter(t => t.date.startsWith(month));
+            transactions = transactions.filter(t => {
+                const transactionMonth = new Date(t.date).toISOString().slice(0, 7);
+                return transactionMonth === month;
+            });
         }
-
-        return transactions;
+        
+        // Ordenar por fecha (más reciente primero)
+        return transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    // Agregar categoría
-    addCategory(type, category) {
-        const data = this.getData();
-        if (!data) return false;
-
-        // Verificar si la categoría ya existe
-        const exists = data.categories[type].some(cat => 
-            cat.id === category.id || cat.name.toLowerCase() === category.name.toLowerCase()
-        );
-
-        if (exists) return false;
-
-        data.categories[type].push(category);
-        return this.saveData(data);
-    }
-
-    // Eliminar categoría
-    deleteCategory(type, categoryId) {
-        const data = this.getData();
-        if (!data) return false;
-
-        const index = data.categories[type].findIndex(cat => cat.id === categoryId);
-        if (index === -1) return false;
-
-        // Eliminar la categoría
-        data.categories[type].splice(index, 1);
-
-        // Actualizar transacciones que usaban esta categoría
-        data.transactions = data.transactions.map(transaction => {
-            if (transaction.category === categoryId) {
-                transaction.category = 'other-' + type;
+    // Calcular totales
+    calculateTotals() {
+        const transactions = this.getTransactions();
+        const totals = {
+            income: 0,
+            expense: 0,
+            balance: 0
+        };
+        
+        transactions.forEach(transaction => {
+            if (transaction.type === 'income') {
+                totals.income += parseFloat(transaction.amount);
+            } else {
+                totals.expense += parseFloat(transaction.amount);
             }
-            return transaction;
         });
-
-        return this.saveData(data);
+        
+        totals.balance = totals.income - totals.expense;
+        return totals;
     }
 
     // Obtener estadísticas por categoría
@@ -170,45 +166,6 @@ class Storage {
         });
         
         return categoryStats;
-    }
-
-    // Obtener balance total
-    getBalance() {
-        const data = this.getData();
-        if (!data) return { income: 0, expense: 0, total: 0 };
-
-        const balance = {
-            income: 0,
-            expense: 0,
-            total: 0
-        };
-
-        data.transactions.forEach(transaction => {
-            const amount = parseFloat(transaction.amount);
-            if (transaction.type === 'income') {
-                balance.income += amount;
-            } else {
-                balance.expense += amount;
-            }
-        });
-
-        balance.total = balance.income - balance.expense;
-        return balance;
-    }
-
-    // Obtener información de categoría
-    getCategoryInfo(categoryId) {
-        const data = this.getData();
-        if (!data) return null;
-        
-        const allCategories = [...data.categories.income, ...data.categories.expense];
-        return allCategories.find(cat => cat.id === categoryId);
-    }
-
-    // Obtener todas las transacciones
-    getTransactions() {
-        const data = this.getData();
-        return data ? data.transactions : [];
     }
 
     // Obtener estadísticas mensuales
@@ -254,6 +211,13 @@ class Storage {
         });
         
         return Array.from(months).sort().reverse();
+    }
+
+    // Obtener información de categoría
+    getCategoryInfo(categoryId) {
+        const data = this.getData();
+        const allCategories = [...data.categories.income, ...data.categories.expense];
+        return allCategories.find(cat => cat.id === categoryId);
     }
 
     // Exportar datos

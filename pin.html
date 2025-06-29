@@ -15,46 +15,43 @@
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, var(--primary-color-light, #81c784), var(--primary-color, #4CAF50));
-            padding: 1rem;
         }
         .pin-card {
             background: #fff;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 2rem;
-            max-width: 400px;
+            padding: 2.5rem 2rem;
+            max-width: 350px;
             width: 100%;
             text-align: center;
-            box-sizing: border-box;
         }
         .pin-title {
             font-size: 1.5rem;
-            color: var(--primary-color, #4CAF50);
             margin-bottom: 0.5rem;
+            color: var(--primary-color, #4CAF50);
         }
         .pin-desc {
             color: #666;
             margin-bottom: 2rem;
         }
         .pin-input {
-            width: 100%;
-            max-width: 200px;
-            height: 50px;
-            font-size: 1.5rem;
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            padding: 0.5rem 1rem;
+            width: 8rem;
             text-align: center;
-            letter-spacing: 8px;
-            border: 1px solid #ddd;
+            border: 2px solid #ccc;
             border-radius: 8px;
-            margin: 0 auto 1rem;
-            display: block;
+            margin-bottom: 1.5rem;
         }
         .password-input {
+            font-size: 1.2rem;
+            padding: 0.75rem 1rem;
             width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            border: 1px solid #ddd;
+            text-align: left;
+            border: 2px solid #ccc;
             border-radius: 8px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             box-sizing: border-box;
         }
         .pin-btn {
@@ -80,6 +77,104 @@
         .pin-error {
             color: #e53935;
             margin-bottom: 1rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid var(--primary-color, #4CAF50);
+        }
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        .user-email {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .biometric-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 15px 0;
+            transition: all 0.2s ease;
+        }
+        .biometric-button:hover {
+            background-color: #e0e0e0;
+        }
+        .fingerprint-icon {
+            font-size: 2rem;
+        }
+        .auth-options {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .auth-option {
+            background: none;
+            border: none;
+            color: var(--primary-color, #4CAF50);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+        .login-with-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            background-color: #fff;
+            color: #757575;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .login-with-google:hover {
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .google-icon {
+            width: 18px;
+            height: 18px;
+        }
+        .change-account {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .change-account a {
+            color: var(--primary-color, #4CAF50);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .error-message {
+            color: #f44336;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
         }
         .user-info {
             display: flex;
@@ -131,10 +226,6 @@
         .not-your-account a {
             color: var(--primary-color, #4CAF50);
             text-decoration: none;
-            cursor: pointer;
-        }
-        .not-your-account a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -179,7 +270,7 @@
             </div>
 
             <p class="not-your-account">
-                ¿No es tu cuenta? <a href="#" id="switch-account">Cambiar de cuenta</a>
+                ¿No es tu cuenta? <a href="welcome.html">Cambiar de cuenta</a>
             </p>
         </div>
     </div>
@@ -192,115 +283,127 @@
     <script src="js/firebase-config.js"></script>
 
     <script>
+        // Variable global para el prefijo del usuario
+        let userPrefix = '';
+
         document.addEventListener('DOMContentLoaded', () => {
             // Cargar información del usuario
             const userId = localStorage.getItem('user_id');
             const userName = localStorage.getItem('user_name');
             const userEmail = localStorage.getItem('user_email');
             const userPhoto = localStorage.getItem('user_photo');
-            const userPrefix = localStorage.getItem('current_user_prefix');
 
-            // Mostrar información del usuario
+            // Obtener o crear el prefijo único para este usuario
+            userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+            localStorage.setItem('current_user_prefix', userPrefix);
+
+            // Actualizar información del usuario en la UI
             if (userName) document.getElementById('user-name').textContent = userName;
             if (userEmail) document.getElementById('user-email').textContent = userEmail;
             if (userPhoto) document.getElementById('user-avatar').src = userPhoto;
 
-            // Verificar si ya hay una sesión activa
-            const pinOk = sessionStorage.getItem('pin_ok');
-            if (pinOk === '1') {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Obtener el tipo de autenticación configurado
+            // Obtener el tipo de autenticación
             const authType = localStorage.getItem(`${userPrefix}_auth_type`);
-            if (!authType) {
-                window.location.href = 'security-options.html';
-                return;
-            }
 
             // Mostrar la interfaz correspondiente
-            document.getElementById(`${authType}-interface`).style.display = 'block';
-
-            // Configurar botón de verificación de PIN
-            const pinInput = document.getElementById('pin-input');
-            const verifyPinBtn = document.getElementById('verify-pin');
-            if (pinInput && verifyPinBtn) {
-                pinInput.addEventListener('input', (e) => {
-                    verifyPinBtn.disabled = e.target.value.length !== 4;
-                });
-
-                verifyPinBtn.addEventListener('click', () => {
-                    const pin = pinInput.value;
-                    const storedPin = localStorage.getItem(`${userPrefix}_pin`);
-                    const errorElement = document.getElementById('pin-error');
-
-                    if (pin === storedPin) {
-                        sessionStorage.setItem('pin_ok', '1');
-                        window.location.href = 'index.html';
-                    } else {
-                        errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
-                        errorElement.style.display = 'block';
-                        pinInput.value = '';
-                        verifyPinBtn.disabled = true;
-                    }
-                });
-
-                pinInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !verifyPinBtn.disabled) {
-                        verifyPinBtn.click();
-                    }
-                });
+            switch(authType) {
+                case 'pin':
+                    setupPinInterface();
+                    break;
+                case 'password':
+                    setupPasswordInterface();
+                    break;
+                case 'biometric':
+                    setupBiometricInterface();
+                    break;
+                default:
+                    // Si no hay método de autenticación configurado, redirigir a security-options.html
+                    window.location.href = 'security-options.html';
             }
-
-            // Configurar botón de verificación de contraseña
-            const passwordInput = document.getElementById('password-input');
-            const verifyPasswordBtn = document.getElementById('verify-password');
-            if (passwordInput && verifyPasswordBtn) {
-                passwordInput.addEventListener('input', (e) => {
-                    verifyPasswordBtn.disabled = !e.target.value;
-                });
-
-                verifyPasswordBtn.addEventListener('click', () => {
-                    const password = passwordInput.value;
-                    const storedPassword = localStorage.getItem(`${userPrefix}_password`);
-                    const errorElement = document.getElementById('password-error');
-
-                    if (password === storedPassword) {
-                        sessionStorage.setItem('pin_ok', '1');
-                        window.location.href = 'index.html';
-                    } else {
-                        errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
-                        errorElement.style.display = 'block';
-                        passwordInput.value = '';
-                        verifyPasswordBtn.disabled = true;
-                    }
-                });
-
-                passwordInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !verifyPasswordBtn.disabled) {
-                        verifyPasswordBtn.click();
-                    }
-                });
-            }
-
-            // Configurar botón de cambiar cuenta
-            document.getElementById('switch-account').addEventListener('click', (e) => {
-                e.preventDefault();
-                // Limpiar datos de usuario
-                localStorage.removeItem('user_id');
-                localStorage.removeItem('user_email');
-                localStorage.removeItem('user_name');
-                localStorage.removeItem('user_photo');
-                localStorage.removeItem('current_user_prefix');
-                sessionStorage.removeItem('pin_ok');
-                
-                // Cerrar sesión de Firebase
-                firebase.auth().signOut().then(() => {
-                    window.location.href = 'welcome.html';
-                });
-            });
         });
+
+        function setupPinInterface() {
+            document.getElementById('pin-interface').style.display = 'block';
+            const pinInput = document.getElementById('pin-input');
+            const verifyButton = document.getElementById('verify-pin');
+            const errorElement = document.getElementById('pin-error');
+
+            pinInput.addEventListener('input', () => {
+                if (pinInput.value.length === 4) {
+                    verifyPin();
+                }
+            });
+
+            verifyButton.addEventListener('click', verifyPin);
+
+            function verifyPin() {
+                const enteredPin = pinInput.value;
+                const storedPin = localStorage.getItem(`${userPrefix}_pin`);
+
+                if (enteredPin === storedPin) {
+                    sessionStorage.setItem('pin_ok', '1');
+                    window.location.href = 'index.html';
+                } else {
+                    errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
+                    errorElement.style.display = 'block';
+                    pinInput.value = '';
+                }
+            }
+        }
+
+        function setupPasswordInterface() {
+            document.getElementById('password-interface').style.display = 'block';
+            const passwordInput = document.getElementById('password-input');
+            const verifyButton = document.getElementById('verify-password');
+            const errorElement = document.getElementById('password-error');
+
+            verifyButton.addEventListener('click', verifyPassword);
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    verifyPassword();
+                }
+            });
+
+            function verifyPassword() {
+                const enteredPassword = passwordInput.value;
+                const storedPassword = localStorage.getItem(`${userPrefix}_password`);
+
+                if (enteredPassword === storedPassword) {
+                    sessionStorage.setItem('pin_ok', '1');
+                    window.location.href = 'index.html';
+                } else {
+                    errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+                    errorElement.style.display = 'block';
+                    passwordInput.value = '';
+                }
+            }
+        }
+
+        function setupBiometricInterface() {
+            document.getElementById('biometric-interface').style.display = 'block';
+            const fingerprintButton = document.getElementById('fingerprint-button');
+            const errorElement = document.getElementById('biometric-error');
+
+            fingerprintButton.addEventListener('click', async () => {
+                if (!navigator.credentials || !window.PublicKeyCredential) {
+                    errorElement.textContent = 'Tu dispositivo no soporta autenticación biométrica';
+                    errorElement.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    // Aquí iría la lógica real de autenticación biométrica
+                    // Por ahora, simulamos un proceso exitoso
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    sessionStorage.setItem('pin_ok', '1');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    errorElement.textContent = 'Error en la autenticación biométrica. Intenta de nuevo.';
+                    errorElement.style.display = 'block';
+                }
+            });
+        }
     </script>
 </body>
 </html> 
