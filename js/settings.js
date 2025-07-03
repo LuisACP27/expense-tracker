@@ -22,15 +22,7 @@ class SettingsPage {
                 '--income-color': '#2196F3',
                 '--expense-color': '#f44336'
             },
-            dark: {
-                '--primary-color': '#212121',
-                '--secondary-color': '#424242',
-                '--background-color': '#121212',
-                '--card-background': '#1e1e1e',
-                '--border-color': '#424242',
-                '--income-color': '#81c784',
-                '--expense-color': '#e57373'
-            },
+
             red: {
                 '--primary-color': '#e53935',
                 '--secondary-color': '#ff7043',
@@ -81,17 +73,17 @@ class SettingsPage {
 
     setupEventListeners() {
         // Selector de tema
-        document.getElementById('theme-select').addEventListener('change', (e) => {
+        document.getElementById('theme-selector').addEventListener('change', (e) => {
             this.changeTheme(e.target.value, true);
         });
 
-        // Switch de modo nocturno
-        document.getElementById('night-mode-toggle').addEventListener('change', (e) => {
-            this.toggleNightMode(e.target.checked);
+        // Switch de modo oscuro
+        document.getElementById('dark-mode-toggle').addEventListener('change', (e) => {
+            this.toggleDarkMode(e.target.checked);
         });
 
         // Selector de idioma
-        document.getElementById('language-select').addEventListener('change', (e) => {
+        document.getElementById('language-selector').addEventListener('change', (e) => {
             this.changeLanguage(e.target.value, true);
         });
 
@@ -122,18 +114,27 @@ class SettingsPage {
     loadSettings() {
         // Cargar tema actual
         const currentTheme = localStorage.getItem('theme') || 'green';
-        document.getElementById('theme-select').value = currentTheme;
-        this.changeTheme(currentTheme, false);
+        const themeSelector = document.getElementById('theme-selector');
+        if (themeSelector) {
+            themeSelector.value = currentTheme;
+            this.changeTheme(currentTheme, false);
+        }
 
-        // Cargar modo nocturno
-        const nightMode = localStorage.getItem('night_mode') === 'true';
-        document.getElementById('night-mode-toggle').checked = nightMode;
-        this.toggleNightMode(nightMode);
+        // Cargar modo oscuro
+        const darkMode = localStorage.getItem('dark_mode') === 'true';
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        if (darkModeToggle) {
+            darkModeToggle.checked = darkMode;
+            this.toggleDarkMode(darkMode);
+        }
 
         // Cargar idioma actual
         const currentLang = localStorage.getItem('language') || 'es';
-        document.getElementById('language-select').value = currentLang;
-        this.changeLanguage(currentLang, false);
+        const languageSelector = document.getElementById('language-selector');
+        if (languageSelector) {
+            languageSelector.value = currentLang;
+            this.changeLanguage(currentLang, false);
+        }
 
         // Cargar información del usuario
         this.loadUserInfo();
@@ -167,10 +168,26 @@ class SettingsPage {
         }
     }
 
-    toggleNightMode(enabled) {
+    toggleDarkMode(enabled) {
         document.documentElement.classList.toggle('dark-mode', enabled);
-        localStorage.setItem('night_mode', enabled);
-        this.showNotification(enabled ? 'Modo nocturno activado' : 'Modo nocturno desactivado', 'success');
+        localStorage.setItem('dark_mode', enabled);
+        
+        // Aplicar estilos del modo oscuro
+        if (enabled) {
+            document.documentElement.style.setProperty('--background-color', '#121212');
+            document.documentElement.style.setProperty('--card-background', '#1e1e1e');
+            document.documentElement.style.setProperty('--text-primary', '#ffffff');
+            document.documentElement.style.setProperty('--text-secondary', '#e0e0e0');
+            document.documentElement.style.setProperty('--border-color', '#424242');
+        } else {
+            document.documentElement.style.setProperty('--background-color', '#f5f5f5');
+            document.documentElement.style.setProperty('--card-background', '#ffffff');
+            document.documentElement.style.setProperty('--text-primary', '#212121');
+            document.documentElement.style.setProperty('--text-secondary', '#666666');
+            document.documentElement.style.setProperty('--border-color', '#e0e0e0');
+        }
+        
+        this.showNotification(enabled ? 'Modo oscuro activado' : 'Modo oscuro desactivado', 'success');
     }
 
     changeLanguage(lang, showNotification = true) {

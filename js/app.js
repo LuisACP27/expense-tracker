@@ -469,22 +469,22 @@ class ExpenseTracker {
 
         // Guardar transacción
         const result = await this.storage.addTransaction(formData);
-        
+
         if (result) {
-            // Actualizar UI
+        // Actualizar UI
             await this.updateBalance();
             await this.loadTransactions();
-            
-            // Limpiar formulario
-            document.getElementById('transaction-form').reset();
-            this.setCurrentDate();
+        
+        // Limpiar formulario
+        document.getElementById('transaction-form').reset();
+        this.setCurrentDate();
             await this.updateCategoryOptions();
 
-            // Mostrar mensaje de éxito
-            this.showNotification('Transacción agregada exitosamente', 'success');
+        // Mostrar mensaje de éxito
+        this.showNotification('Transacción agregada exitosamente', 'success');
 
-            // Cambiar a la pestaña de transacciones
-            this.switchTab('list');
+        // Cambiar a la pestaña de transacciones
+        this.switchTab('list');
         } else {
             this.showNotification('Error al agregar la transacción', 'error');
         }
@@ -499,7 +499,7 @@ class ExpenseTracker {
                     if (success) {
                         await this.updateBalance();
                         await this.loadTransactions();
-                        this.showNotification('Transacción eliminada', 'info');
+                    this.showNotification('Transacción eliminada', 'info');
                     } else {
                         this.showNotification('Error al eliminar la transacción', 'error');
                     }

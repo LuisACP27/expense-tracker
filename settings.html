@@ -42,9 +42,15 @@
                         <option value="red" id="theme-red">Rojo</option>
                         <option value="orange" id="theme-orange">Naranja</option>
                         <option value="gray" id="theme-gray">Gris</option>
-                        <option value="dark" id="theme-dark">Modo Oscuro</option>
                             </select>
                         </div>
+                <div class="form-group">
+                    <label for="dark-mode-toggle" id="dark-mode-label">Modo Oscuro</label>
+                    <div class="switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="slider"></span>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="language-selector" id="language-label">Idioma</label>
                     <select id="language-selector">
@@ -185,7 +191,7 @@
                 safeUpdateText('theme-red', t.themeRed);
                 safeUpdateText('theme-orange', t.themeOrange);
                 safeUpdateText('theme-gray', t.themeGray);
-                safeUpdateText('theme-dark', t.themeDark);
+                safeUpdateText('dark-mode-label', t.darkMode);
                 
                 // Menú inferior
                 safeUpdateQueryText('[data-tab="add"] .bottom-nav-text', t.add);
