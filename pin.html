@@ -281,8 +281,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
-    <!-- Security Manager -->
-    <script src="js/security.js"></script>
 
     <script>
         // Variable global para el prefijo del usuario
@@ -338,20 +336,11 @@
 
             verifyButton.addEventListener('click', verifyPin);
 
-            async function verifyPin() {
+            function verifyPin() {
                 const enteredPin = pinInput.value;
-                let isValid = false;
-                
-                // Primero intentar con el método antiguo por compatibilidad
                 const storedPin = localStorage.getItem(`${userPrefix}_pin`);
-                if (storedPin && enteredPin === storedPin) {
-                    isValid = true;
-                } else if (window.securityManager) {
-                    // Usar el security manager para verificación segura
-                    isValid = await window.securityManager.verifyCredentials(userPrefix, 'pin', enteredPin);
-                }
 
-                if (isValid) {
+                if (enteredPin === storedPin) {
                     sessionStorage.setItem('pin_ok', '1');
                     window.location.href = 'index.html';
                 } else {
@@ -375,20 +364,11 @@
                 }
             });
 
-            async function verifyPassword() {
+            function verifyPassword() {
                 const enteredPassword = passwordInput.value;
-                let isValid = false;
-                
-                // Primero intentar con el método antiguo por compatibilidad
                 const storedPassword = localStorage.getItem(`${userPrefix}_password`);
-                if (storedPassword && enteredPassword === storedPassword) {
-                    isValid = true;
-                } else if (window.securityManager) {
-                    // Usar el security manager para verificación segura
-                    isValid = await window.securityManager.verifyCredentials(userPrefix, 'password', enteredPassword);
-                }
 
-                if (isValid) {
+                if (enteredPassword === storedPassword) {
                     sessionStorage.setItem('pin_ok', '1');
                     window.location.href = 'index.html';
                 } else {

@@ -278,39 +278,12 @@
         </div>
     </div>
     
-    <!-- Modal de verificación de seguridad -->
-    <div id="auth-verify-modal" class="modal hidden">
-        <div class="modal-content" style="max-width: 400px;">
-            <h3>Verificación de Seguridad</h3>
-            <p id="verify-message">Ingresa tu PIN actual para continuar</p>
-            
-            <!-- Para PIN -->
-            <div id="verify-pin-section" style="display: none;">
-                <input type="password" id="verify-pin-input" class="password-input" maxlength="4" placeholder="PIN actual">
-            </div>
-            
-            <!-- Para contraseña -->
-            <div id="verify-password-section" style="display: none;">
-                <input type="password" id="verify-password-input" class="password-input" placeholder="Contraseña actual">
-            </div>
-            
-            <p id="verify-error" class="error-message"></p>
-            
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="verify-confirm" class="btn-continue" style="flex: 1;">Verificar</button>
-                <button id="verify-cancel" class="btn-secondary" style="flex: 1;">Cancelar</button>
-            </div>
-        </div>
-    </div>
-    
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
-    <!-- Security Manager -->
-    <script src="js/security.js"></script>
     
     <script>
         // Variable global para el prefijo del usuario
@@ -337,19 +310,18 @@
                 return;
             }
 
-            // Si estamos cambiando la configuración, verificar autenticación primero
+            // Si estamos cambiando la configuración, mostrar diálogo de confirmación
             if (isChanging) {
                 const currentMethod = localStorage.getItem(`${userPrefix}_auth_type`);
-                
-                // Primero verificar la autenticación actual
-                if (currentMethod === 'pin' || currentMethod === 'password') {
-                    // Mostrar modal de verificación
-                    showAuthVerificationModal(currentMethod, userPrefix, () => {
-                        // Si la verificación es exitosa, continuar
-                        clearPreviousSecurityConfig();
-                    });
-                } else {
-                    clearPreviousSecurityConfig();
+                const methodNames = {
+                    'pin': 'PIN',
+                    'password': 'contraseña',
+                    'biometric': 'huella digital'
+                };
+                const confirmChange = confirm(`Estás a punto de cambiar tu método de seguridad actual (${methodNames[currentMethod] || 'desconocido'}). ¿Deseas continuar?`);
+                if (!confirmChange) {
+                    window.location.href = 'settings.html';
+                    return;
                 }
             }
             
@@ -503,7 +475,7 @@
         }
         
         // Guardar PIN
-        async function savePin() {
+        function savePin() {
             const pinDigits = document.querySelectorAll('.pin-digit');
             const pinDigitsConfirm = document.querySelectorAll('.pin-digit-confirm');
             const errorElement = document.getElementById('pin-error');
@@ -526,31 +498,20 @@
                 return;
             }
             
-            // Guardar PIN usando el security manager si está disponible
-            let success = false;
-            if (window.securityManager) {
-                success = await window.securityManager.saveCredentials(userPrefix, 'pin', pin);
-            } else {
-                // Fallback al método antiguo
-                localStorage.setItem(`${userPrefix}_auth_type`, 'pin');
-                localStorage.setItem(`${userPrefix}_pin`, pin);
-                success = true;
-            }
+            // Guardar PIN con el prefijo correcto
+            localStorage.setItem(`${userPrefix}_auth_type`, 'pin');
+            localStorage.setItem(`${userPrefix}_pin`, pin);
             
-            if (success) {
-                // Mostrar mensaje de éxito y botón para continuar
-                errorElement.textContent = '';
-                errorElement.className = 'success-message';
-                errorElement.textContent = 'PIN configurado correctamente';
-                
-                document.getElementById('btn-continue').style.display = 'block';
-            } else {
-                errorElement.textContent = 'Error al guardar el PIN';
-            }
+            // Mostrar mensaje de éxito y botón para continuar
+            errorElement.textContent = '';
+            errorElement.className = 'success-message';
+            errorElement.textContent = 'PIN configurado correctamente';
+            
+            document.getElementById('btn-continue').style.display = 'block';
         }
         
         // Guardar contraseña
-        async function savePassword() {
+        function savePassword() {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             const errorElement = document.getElementById('password-error');
@@ -566,27 +527,16 @@
                 return;
             }
             
-            // Guardar contraseña usando el security manager si está disponible
-            let success = false;
-            if (window.securityManager) {
-                success = await window.securityManager.saveCredentials(userPrefix, 'password', password);
-            } else {
-                // Fallback al método antiguo
-                localStorage.setItem(`${userPrefix}_auth_type`, 'password');
-                localStorage.setItem(`${userPrefix}_password`, password);
-                success = true;
-            }
+            // Guardar contraseña con el prefijo correcto
+            localStorage.setItem(`${userPrefix}_auth_type`, 'password');
+            localStorage.setItem(`${userPrefix}_password`, password);
             
-            if (success) {
-                // Mostrar mensaje de éxito y botón para continuar
-                errorElement.textContent = '';
-                errorElement.className = 'success-message';
-                errorElement.textContent = 'Contraseña configurada correctamente';
-                
-                document.getElementById('btn-continue').style.display = 'block';
-            } else {
-                errorElement.textContent = 'Error al guardar la contraseña';
-            }
+            // Mostrar mensaje de éxito y botón para continuar
+            errorElement.textContent = '';
+            errorElement.className = 'success-message';
+            errorElement.textContent = 'Contraseña configurada correctamente';
+            
+            document.getElementById('btn-continue').style.display = 'block';
         }
         
         // Configurar biometría
@@ -631,113 +581,6 @@
         function goBack() {
             const isChanging = window.location.search.includes('change=true');
             window.location.href = isChanging ? 'settings.html' : 'welcome.html';
-        }
-        
-        // Función para limpiar configuración de seguridad anterior
-        function clearPreviousSecurityConfig() {
-            // Limpiar configuraciones anteriores
-            localStorage.removeItem(`${userPrefix}_pin`);
-            localStorage.removeItem(`${userPrefix}_password`);
-            localStorage.removeItem(`${userPrefix}_auth_type`);
-            
-            // Si existe el security manager, limpiar también las credenciales seguras
-            if (window.securityManager) {
-                window.securityManager.clearCredentials(userPrefix);
-            }
-        }
-        
-        // Función para mostrar modal de verificación
-        function showAuthVerificationModal(authType, userPrefix, onSuccess) {
-            const modal = document.getElementById('auth-verify-modal');
-            const verifyMessage = document.getElementById('verify-message');
-            const verifyPinSection = document.getElementById('verify-pin-section');
-            const verifyPasswordSection = document.getElementById('verify-password-section');
-            const verifyPinInput = document.getElementById('verify-pin-input');
-            const verifyPasswordInput = document.getElementById('verify-password-input');
-            const verifyError = document.getElementById('verify-error');
-            const verifyConfirm = document.getElementById('verify-confirm');
-            const verifyCancel = document.getElementById('verify-cancel');
-            
-            // Limpiar estado anterior
-            verifyError.textContent = '';
-            verifyPinInput.value = '';
-            verifyPasswordInput.value = '';
-            
-            // Configurar según tipo
-            if (authType === 'pin') {
-                verifyMessage.textContent = 'Ingresa tu PIN actual para continuar';
-                verifyPinSection.style.display = 'block';
-                verifyPasswordSection.style.display = 'none';
-                modal.classList.remove('hidden');
-                verifyPinInput.focus();
-            } else if (authType === 'password') {
-                verifyMessage.textContent = 'Ingresa tu contraseña actual para continuar';
-                verifyPinSection.style.display = 'none';
-                verifyPasswordSection.style.display = 'block';
-                modal.classList.remove('hidden');
-                verifyPasswordInput.focus();
-            }
-            
-            // Manejar verificación
-            const handleVerify = async () => {
-                let isValid = false;
-                
-                if (authType === 'pin') {
-                    const enteredPin = verifyPinInput.value;
-                    const storedPin = localStorage.getItem(`${userPrefix}_pin`);
-                    
-                    if (storedPin && enteredPin === storedPin) {
-                        isValid = true;
-                    } else if (window.securityManager) {
-                        // Verificar con el nuevo sistema de seguridad
-                        isValid = await window.securityManager.verifyCredentials(userPrefix, 'pin', enteredPin);
-                    }
-                } else if (authType === 'password') {
-                    const enteredPassword = verifyPasswordInput.value;
-                    const storedPassword = localStorage.getItem(`${userPrefix}_password`);
-                    
-                    if (storedPassword && enteredPassword === storedPassword) {
-                        isValid = true;
-                    } else if (window.securityManager) {
-                        // Verificar con el nuevo sistema de seguridad
-                        isValid = await window.securityManager.verifyCredentials(userPrefix, 'password', enteredPassword);
-                    }
-                }
-                
-                if (isValid) {
-                    modal.classList.add('hidden');
-                    onSuccess();
-                } else {
-                    verifyError.textContent = authType === 'pin' ? 'PIN incorrecto' : 'Contraseña incorrecta';
-                    if (authType === 'pin') {
-                        verifyPinInput.value = '';
-                        verifyPinInput.focus();
-                    } else {
-                        verifyPasswordInput.value = '';
-                        verifyPasswordInput.focus();
-                    }
-                }
-            };
-            
-            // Event listeners
-            verifyConfirm.onclick = handleVerify;
-            verifyCancel.onclick = () => {
-                modal.classList.add('hidden');
-                window.location.href = 'settings.html';
-            };
-            
-            // Enter key para verificar
-            verifyPinInput.onkeypress = (e) => {
-                if (e.key === 'Enter' || (verifyPinInput.value.length === 4)) {
-                    handleVerify();
-                }
-            };
-            
-            verifyPasswordInput.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    handleVerify();
-                }
-            };
         }
     </script>
 </body>

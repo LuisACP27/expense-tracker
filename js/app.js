@@ -120,8 +120,30 @@ class ExpenseTracker {
             });
         }
 
-        // El selector de categoría ahora funciona como select normal
-        // No necesitamos eventos especiales
+        // Selector de categoría personalizado
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) {
+            categorySelect.addEventListener('focus', (e) => {
+                e.preventDefault();
+                this.openCategoryPicker();
+            });
+            categorySelect.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.openCategoryPicker();
+            });
+        }
+
+        // Cerrar picker
+        const closePickerBtn = document.getElementById('close-category-picker');
+        const pickerModal = document.getElementById('category-picker-modal');
+        if (closePickerBtn) {
+            closePickerBtn.addEventListener('click', () => this.closeCategoryPicker());
+        }
+        if (pickerModal) {
+            pickerModal.addEventListener('mousedown', (e) => {
+                if (e.target === e.currentTarget) this.closeCategoryPicker();
+            });
+        }
 
         // Pull to refresh
         this.setupPullToRefresh();
@@ -521,83 +543,36 @@ class ExpenseTracker {
             return;
         }
 
-        // Ordenar transacciones por fecha (más reciente primero)
-        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        // Agrupar transacciones por fecha
-        const transactionsByDate = {};
-        for (const transaction of transactions) {
+        // Construir HTML de todas las transacciones
+        const transactionsHTML = await Promise.all(transactions.map(async transaction => {
+            const categoryInfo = await this.storage.getCategoryInfo(transaction.category);
             const date = new Date(transaction.date);
-            const dateKey = date.toLocaleDateString('es-ES', { 
-                weekday: 'long',
+            const formattedDate = date.toLocaleDateString('es-ES', { 
                 day: 'numeric', 
-                month: 'long', 
+                month: 'short', 
                 year: 'numeric' 
             });
-            
-            if (!transactionsByDate[dateKey]) {
-                transactionsByDate[dateKey] = {
-                    date: transaction.date,
-                    transactions: [],
-                    totalIncome: 0,
-                    totalExpense: 0
-                };
-            }
-            
-            transactionsByDate[dateKey].transactions.push(transaction);
-            if (transaction.type === 'income') {
-                transactionsByDate[dateKey].totalIncome += parseFloat(transaction.amount);
-            } else {
-                transactionsByDate[dateKey].totalExpense += parseFloat(transaction.amount);
-            }
-        }
 
-        // Construir HTML de todas las transacciones agrupadas
-        let transactionsHTML = '';
-        
-        for (const [dateKey, group] of Object.entries(transactionsByDate)) {
-            const dayBalance = group.totalIncome - group.totalExpense;
-            
-            transactionsHTML += `
-                <div class="transaction-date-group">
-                    <div class="date-header">
-                        <span class="date-text">${dateKey}</span>
-                        <span class="date-balance ${dayBalance >= 0 ? 'positive' : 'negative'}">
-                            ${dayBalance >= 0 ? '+' : ''}$${dayBalance.toFixed(2)}
+            return `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">
+                            ${categoryInfo ? categoryInfo.icon : ''} ${categoryInfo ? categoryInfo.name : transaction.category}
+                        </div>
+                        ${transaction.description ? `<div class="transaction-description">${transaction.description}</div>` : ''}
+                        <div class="transaction-date">${formattedDate}</div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span class="transaction-amount ${transaction.type}">
+                            ${transaction.type === 'income' ? '+' : '-'}$${parseFloat(transaction.amount).toFixed(2)}
                         </span>
+                        <button class="delete-btn" data-id="${transaction.id}">🗑️</button>
                     </div>
+                </div>
             `;
-            
-            for (const transaction of group.transactions) {
-                const categoryInfo = await this.storage.getCategoryInfo(transaction.category);
-                const time = new Date(transaction.date).toLocaleTimeString('es-ES', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                transactionsHTML += `
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <div class="transaction-category">
-                                ${categoryInfo ? categoryInfo.icon : ''} ${categoryInfo ? categoryInfo.name : transaction.category}
-                            </div>
-                            ${transaction.description ? `<div class="transaction-description">${transaction.description}</div>` : ''}
-                            <div class="transaction-time">${time}</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="transaction-amount ${transaction.type}">
-                                ${transaction.type === 'income' ? '+' : '-'}$${parseFloat(transaction.amount).toFixed(2)}
-                            </span>
-                            <button class="delete-btn" data-id="${transaction.id}" title="Eliminar">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            transactionsHTML += '</div>';
-        }
+        }));
         
-        listContainer.innerHTML = transactionsHTML;
+        listContainer.innerHTML = transactionsHTML.join('');
     }
 
     // Cargar filtro de meses
@@ -673,7 +648,233 @@ class ExpenseTracker {
         }, 3000);
     }
 
-    // Métodos del picker eliminados - ahora usamos select nativo
+    async openCategoryPicker() {
+        const type = document.querySelector('input[name="type"]:checked').value;
+        const allCategories = await this.storage.getCategories();
+        
+        // Verificar que existan datos y categorías
+        if (!allCategories || !allCategories[type] || allCategories[type].length === 0) {
+            // Si no hay categorías, mostrar un mensaje
+            this.showNotification('No hay categorías disponibles. Por favor, crea una categoría primero.', 'info');
+            this.openCategoryModal();
+            return;
+        }
+        
+        const categories = allCategories[type];
+        const pickerList = document.getElementById('category-picker-list');
+        
+        // Limpiar lista
+        pickerList.innerHTML = '';
+        
+        // Calcular altura del viewport y del item para centrado perfecto
+        const viewportHeight = window.innerHeight;
+        const itemHeight = 80; // Altura aproximada de cada item
+        const paddingCount = Math.floor(viewportHeight / (2 * itemHeight));
+        
+        // Agregar elementos de padding al inicio para centrado
+        for (let i = 0; i < paddingCount; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'category-picker-item empty';
+            emptyDiv.style.height = `${itemHeight}px`;
+            emptyDiv.style.visibility = 'hidden';
+            pickerList.appendChild(emptyDiv);
+        }
+        
+        // Renderizar categorías
+        categories.forEach((cat, idx) => {
+            const item = document.createElement('div');
+            item.className = 'category-picker-item';
+            item.dataset.index = idx;
+            item.dataset.categoryId = cat.id;
+            item.innerHTML = `
+                <div class="cat-icon">${cat.icon}</div>
+                <div class="cat-name">${cat.name}</div>
+            `;
+            pickerList.appendChild(item);
+        });
+        
+        // Agregar elementos de padding al final para centrado
+        for (let i = 0; i < paddingCount; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'category-picker-item empty';
+            emptyDiv.style.height = `${itemHeight}px`;
+            emptyDiv.style.visibility = 'hidden';
+            pickerList.appendChild(emptyDiv);
+        }
+        
+        // Mostrar modal
+        document.getElementById('category-picker-modal').classList.remove('hidden');
+        
+        // Scroll al elemento seleccionado actual o al centro
+        setTimeout(() => {
+            const select = document.getElementById('category');
+            const selectedValue = select.value;
+            let targetIndex = Math.floor(categories.length / 2); // Por defecto al centro
+            
+            if (selectedValue) {
+                const selectedCategoryIndex = categories.findIndex(cat => cat.id === selectedValue);
+                if (selectedCategoryIndex !== -1) {
+                    targetIndex = selectedCategoryIndex;
+                }
+            }
+            
+            this.scrollToPickerIndex(targetIndex);
+        }, 50);
+        
+        // Configurar eventos de scroll
+        this.setupCategoryPickerScroll();
+        
+        // Click en categoría
+        pickerList.onclick = (e) => {
+            const item = e.target.closest('.category-picker-item');
+            if (item && !item.classList.contains('empty')) {
+                const index = parseInt(item.dataset.index);
+                this.selectCategoryFromPicker(index);
+            }
+        };
+        
+        // Teclado para navegación
+        pickerList.tabIndex = 0;
+        pickerList.onkeydown = (e) => {
+            const currentIndex = this.getCurrentSelectedIndex();
+            let newIndex = currentIndex;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    newIndex = Math.max(0, currentIndex - 1);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    newIndex = Math.min(categories.length - 1, currentIndex + 1);
+                    break;
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    if (currentIndex >= 0) {
+                        this.selectCategoryFromPicker(currentIndex);
+                    }
+                    return;
+                case 'Escape':
+                    e.preventDefault();
+                    this.closeCategoryPicker();
+                    return;
+            }
+            
+            if (newIndex !== currentIndex) {
+                this.scrollToPickerIndex(newIndex);
+            }
+        };
+        
+        // Enfocar el picker para navegación por teclado
+        setTimeout(() => {
+            pickerList.focus();
+        }, 100);
+    }
+
+    closeCategoryPicker() {
+        document.getElementById('category-picker-modal').classList.add('hidden');
+    }
+
+    updatePickerVisual() {
+        const pickerList = document.getElementById('category-picker-list');
+        const scrollIndicator = document.getElementById('scroll-indicator');
+        const items = Array.from(pickerList.children).filter(item => !item.classList.contains('empty'));
+        const rect = pickerList.getBoundingClientRect();
+        const centerY = rect.top + rect.height / 2;
+        
+        // Mostrar/ocultar indicador de scroll
+        if (scrollIndicator) {
+            const isAtTop = pickerList.scrollTop <= 0;
+            const isAtBottom = pickerList.scrollTop + pickerList.clientHeight >= pickerList.scrollHeight;
+            
+            if (isAtTop || isAtBottom) {
+                scrollIndicator.classList.remove('visible');
+            } else {
+                scrollIndicator.classList.add('visible');
+            }
+        }
+        
+        items.forEach(item => {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenter = itemRect.top + itemRect.height / 2;
+            const dist = Math.abs(centerY - itemCenter);
+            
+            // Remover clases anteriores
+            item.classList.remove('center', 'near', 'far');
+            
+            if (dist < 40) {
+                item.classList.add('center');
+            } else if (dist < 80) {
+                item.classList.add('near');
+            } else {
+                item.classList.add('far');
+            }
+        });
+    }
+
+    scrollToPickerIndex(idx) {
+        const pickerList = document.getElementById('category-picker-list');
+        const items = Array.from(pickerList.children).filter(item => !item.classList.contains('empty'));
+        
+        if (items[idx]) {
+            const item = items[idx];
+            const listRect = pickerList.getBoundingClientRect();
+            const itemRect = item.getBoundingClientRect();
+            const itemHeight = itemRect.height;
+            
+            // Calcular la posición exacta para centrar el elemento
+            const targetScrollTop = item.offsetTop - (listRect.height / 2) + (itemHeight / 2);
+            
+            // Scroll suave al elemento
+            pickerList.scrollTo({
+                top: targetScrollTop,
+                behavior: 'smooth'
+            });
+            
+            // Actualizar visual después del scroll
+            setTimeout(() => {
+                this.updatePickerVisual();
+            }, 300);
+        }
+    }
+
+    getCurrentSelectedIndex() {
+        const pickerList = document.getElementById('category-picker-list');
+        const items = Array.from(pickerList.children).filter(item => !item.classList.contains('empty'));
+        const rect = pickerList.getBoundingClientRect();
+        const centerY = rect.top + rect.height / 2;
+        
+        let closestIndex = -1;
+        let closestDistance = Infinity;
+        
+        items.forEach((item, index) => {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenter = itemRect.top + itemRect.height / 2;
+            const dist = Math.abs(centerY - itemCenter);
+            
+            if (dist < closestDistance) {
+                closestDistance = dist;
+                closestIndex = index;
+            }
+        });
+        
+        return closestIndex;
+    }
+
+    async selectCategoryFromPicker(idx) {
+        const type = document.querySelector('input[name="type"]:checked').value;
+        const allCategories = await this.storage.getCategories();
+        const categories = allCategories[type];
+        const cat = categories[idx];
+        if (cat) {
+            // Seleccionar en el select real
+            const select = document.getElementById('category');
+            select.value = cat.id;
+            select.dispatchEvent(new Event('change'));
+            this.closeCategoryPicker();
+        }
+    }
 
     setupPullToRefresh() {
         const container = document.querySelector('.container');
@@ -742,7 +943,39 @@ class ExpenseTracker {
         this.showNotification('Datos actualizados', 'success');
     }
 
-
+    setupCategoryPickerScroll() {
+        const pickerList = document.getElementById('category-picker-list');
+        let isScrolling = false;
+        let scrollTimeout;
+        
+        // Función para manejar el scroll con momentum
+        const handleScroll = () => {
+            if (!isScrolling) {
+                isScrolling = true;
+                pickerList.style.pointerEvents = 'none';
+            }
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isScrolling = false;
+                pickerList.style.pointerEvents = 'auto';
+                this.updatePickerVisual();
+            }, 150);
+        };
+        
+        // Eventos de scroll
+        pickerList.addEventListener('scroll', handleScroll, { passive: true });
+        pickerList.addEventListener('touchmove', handleScroll, { passive: true });
+        pickerList.addEventListener('wheel', handleScroll, { passive: true });
+        
+        // Snap al elemento más cercano al centro cuando termine el scroll
+        pickerList.addEventListener('scrollend', () => {
+            const currentIndex = this.getCurrentSelectedIndex();
+            if (currentIndex >= 0) {
+                this.scrollToPickerIndex(currentIndex);
+            }
+        });
+    }
 }
 
 // Inicializar aplicación cuando el DOM esté listo

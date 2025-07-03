@@ -20,6 +20,16 @@ const themes = {
         '--income-color': '#2196F3',
         '--expense-color': '#f44336'
     },
+    dark: {
+        '--primary-color': '#212121',
+        '--primary-color-rgb': '33, 33, 33',
+        '--secondary-color': '#424242',
+        '--background-color': '#121212',
+        '--card-background': '#1e1e1e',
+        '--border-color': '#424242',
+        '--income-color': '#81c784',
+        '--expense-color': '#e57373'
+    },
     red: {
         '--primary-color': '#e53935',
         '--primary-color-rgb': '229, 57, 53',
@@ -89,82 +99,16 @@ function changeTheme(themeName) {
         document.documentElement.style.setProperty(key, theme[key]);
     });
     
-    // Actualizar el meta theme-color
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
-    
-    // Aplicar modo oscuro si está activado
-    applyDarkModeIfEnabled();
-    
-    // Disparar evento de cambio de tema
-    window.dispatchEvent(new Event('themeChanged'));
+    // Manejar modo oscuro
+    if (themeName === 'dark') {
+        document.body.classList.add('night-mode');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#212121');
+    } else {
+        document.body.classList.remove('night-mode');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
+    }
     
     return true;
-}
-
-// Función para obtener si el modo oscuro está habilitado
-function isDarkModeEnabled() {
-    if (localStorage.getItem('user_id')) {
-        const userPrefix = localStorage.getItem('current_user_prefix');
-        return localStorage.getItem(`${userPrefix}_dark_mode`) === 'true';
-    }
-    return localStorage.getItem('dark_mode') === 'true';
-}
-
-// Función para activar/desactivar modo oscuro
-function toggleDarkMode(enabled) {
-    if (localStorage.getItem('user_id')) {
-        const userPrefix = localStorage.getItem('current_user_prefix');
-        localStorage.setItem(`${userPrefix}_dark_mode`, enabled ? 'true' : 'false');
-    } else {
-        localStorage.setItem('dark_mode', enabled ? 'true' : 'false');
-    }
-    
-    applyDarkModeIfEnabled();
-    window.dispatchEvent(new Event('darkModeChanged'));
-}
-
-// Función para aplicar modo oscuro si está habilitado
-function applyDarkModeIfEnabled() {
-    const darkModeEnabled = isDarkModeEnabled();
-    
-    if (darkModeEnabled) {
-        document.body.setAttribute('data-dark-mode', 'true');
-        // Ajustar colores para modo oscuro
-        const currentTheme = getCurrentTheme();
-        const theme = themes[currentTheme];
-        
-        // Colores oscuros universales
-        document.documentElement.style.setProperty('--background-color', '#121212');
-        document.documentElement.style.setProperty('--card-background', '#1e1e1e');
-        document.documentElement.style.setProperty('--text-primary', '#ffffff');
-        document.documentElement.style.setProperty('--text-secondary', '#b0b0b0');
-        document.documentElement.style.setProperty('--border-color', '#333333');
-        document.documentElement.style.setProperty('--bottom-nav-bg', '#1e1e1e');
-        document.documentElement.style.setProperty('--bottom-nav-border', '#333333');
-        
-        // Mantener los colores primarios del tema pero ajustados
-        const primaryColor = theme['--primary-color'];
-        document.documentElement.style.setProperty('--primary-color-light', adjustColorBrightness(primaryColor, 20));
-        document.documentElement.style.setProperty('--income-color', '#4CAF50');
-        document.documentElement.style.setProperty('--expense-color', '#ef5350');
-    } else {
-        document.body.removeAttribute('data-dark-mode');
-        // Restaurar colores del tema actual
-        const currentTheme = getCurrentTheme();
-        changeTheme(currentTheme);
-    }
-}
-
-// Función auxiliar para ajustar brillo de color
-function adjustColorBrightness(color, percent) {
-    const num = parseInt(color.replace("#", ""), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = (num >> 16) + amt;
-    const G = (num >> 8 & 0x00FF) + amt;
-    const B = (num & 0x0000FF) + amt;
-    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
 }
 
 // Función para aplicar el tema actual
@@ -178,7 +122,5 @@ window.appTheme = {
     themes,
     getCurrentTheme,
     changeTheme,
-    applyCurrentTheme,
-    isDarkModeEnabled,
-    toggleDarkMode
+    applyCurrentTheme
 }; 

@@ -42,14 +42,8 @@
                         <option value="red" id="theme-red">Rojo</option>
                         <option value="orange" id="theme-orange">Naranja</option>
                         <option value="gray" id="theme-gray">Gris</option>
+                        <option value="dark" id="theme-dark">Modo Oscuro</option>
                             </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="dark-mode-toggle" id="dark-mode-label">Modo Oscuro</label>
-                            <div class="switch">
-                                <input type="checkbox" id="dark-mode-toggle">
-                                <span class="slider"></span>
-                            </div>
                         </div>
                 <div class="form-group">
                     <label for="language-selector" id="language-label">Idioma</label>
@@ -223,14 +217,6 @@
                 window.appTheme.changeTheme(this.value);
             });
             
-            // Configurar switch de modo oscuro
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            darkModeToggle.checked = window.appTheme.isDarkModeEnabled();
-            
-            darkModeToggle.addEventListener('change', function() {
-                window.appTheme.toggleDarkMode(this.checked);
-            });
-            
             // Configurar selector de idioma
             const languageSelector = document.getElementById('language-selector');
             languageSelector.value = window.appLanguage.getCurrentLanguage();
@@ -245,10 +231,7 @@
             
             // Configurar botón de cambio de seguridad
             document.getElementById('change-security').addEventListener('click', function() {
-                // Limpiar la sesión actual antes de cambiar el método de seguridad
-                sessionStorage.removeItem('pin_ok');
-                // Redirigir con parámetro para indicar cambio
-                window.location.href = 'security-options.html?change=true';
+                window.location.href = 'security-options.html';
             });
             
             // Configurar botón de exportar datos
