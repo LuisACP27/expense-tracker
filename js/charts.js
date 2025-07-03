@@ -4,6 +4,7 @@ class ChartManager {
     constructor() {
         this.categoryChart = null;
         this.trendChart = null;
+        this.storage = typeof storageAdapter !== 'undefined' ? storageAdapter : storage;
         this.chartColors = {
             income: '#4CAF50',
             expense: '#f44336',
@@ -146,20 +147,20 @@ class ChartManager {
     }
 
     // Actualizar gráfico de categorías
-    updateCategoryChart(month = 'all') {
+    async updateCategoryChart(month = 'all') {
         if (!this.categoryChart) return;
 
-        const categoryStats = storage.getCategoryStats('expense', month);
+        const categoryStats = await this.storage.getCategoryStats('expense', month);
         const labels = [];
         const data = [];
 
-        Object.entries(categoryStats).forEach(([categoryId, amount]) => {
-            const categoryInfo = storage.getCategoryInfo(categoryId);
+        for (const [categoryId, amount] of Object.entries(categoryStats)) {
+            const categoryInfo = await this.storage.getCategoryInfo(categoryId);
             if (categoryInfo) {
                 labels.push(categoryInfo.name);
                 data.push(amount);
             }
-        });
+        }
 
         this.categoryChart.data.labels = labels;
         this.categoryChart.data.datasets[0].data = data;
@@ -167,11 +168,11 @@ class ChartManager {
     }
 
     // Actualizar gráfico de tendencias
-    updateTrendChart() {
+    async updateTrendChart() {
         if (!this.trendChart) return;
 
         const currentYear = new Date().getFullYear();
-        const monthlyStats = storage.getMonthlyStats(currentYear);
+        const monthlyStats = await this.storage.getMonthlyStats(currentYear);
         const months = [];
         const incomeData = [];
         const expenseData = [];
@@ -196,12 +197,15 @@ class ChartManager {
     }
 
     // Actualizar resumen mensual
-    updateMonthlySummary() {
+    async updateMonthlySummary() {
         const summaryContainer = document.getElementById('monthly-summary');
         if (!summaryContainer) return;
 
         const currentMonth = new Date().toISOString().slice(0, 7);
-        const transactions = storage.getFilteredTransactions('all', currentMonth);
+        const transactions = await this.storage.getTransactions({ 
+            type: 'all', 
+            month: currentMonth 
+        });
         
         // Calcular estadísticas del mes
         let monthIncome = 0;
@@ -230,7 +234,7 @@ class ChartManager {
             }
         });
 
-        const topCategoryInfo = topCategory ? storage.getCategoryInfo(topCategory) : null;
+        const topCategoryInfo = topCategory ? await this.storage.getCategoryInfo(topCategory) : null;
 
         // Generar HTML del resumen
         summaryContainer.innerHTML = `
@@ -262,10 +266,12 @@ class ChartManager {
     }
 
     // Actualizar todos los gráficos
-    updateAllCharts() {
-        this.updateCategoryChart();
-        this.updateTrendChart();
-        this.updateMonthlySummary();
+    async updateAllCharts() {
+        await Promise.all([
+            this.updateCategoryChart(),
+            this.updateTrendChart(),
+            this.updateMonthlySummary()
+        ]);
     }
 
     // Destruir gráficos (para reinicialización)

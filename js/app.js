@@ -3,22 +3,23 @@
 class ExpenseTracker {
     constructor() {
         this.currentTab = 'add';
+        this.storage = typeof storageAdapter !== 'undefined' ? storageAdapter : storage;
         this.init();
     }
 
-    init() {
+    async init() {
         // Establecer fecha actual en el formulario
         this.setCurrentDate();
         
         // Cargar datos iniciales
-        this.updateBalance();
-        this.loadTransactions();
-        this.loadMonthFilter();
+        await this.updateBalance();
+        await this.loadTransactions();
+        await this.loadMonthFilter();
 
         // Renderizar categorías dinámicamente
-        this.renderCategories();
+        await this.renderCategories();
         // Asegurar que se muestren las categorías correctas según el tipo seleccionado
-        this.updateCategoryOptions();
+        await this.updateCategoryOptions();
 
         // Configurar event listeners
         this.setupEventListeners();
@@ -27,6 +28,18 @@ class ExpenseTracker {
         this.initChartsOnFirstView = true;
 
         this.setupSwipeGestures();
+        
+        // Configurar listeners en tiempo real si está disponible
+        if (this.storage.setupRealtimeListeners) {
+            this.storage.setupRealtimeListeners({
+                onTransactionsChange: (changes) => {
+                    this.handleRealtimeChanges(changes);
+                }
+            });
+        }
+        
+        // Mostrar estado de sincronización
+        this.updateSyncStatus();
     }
 
     setupEventListeners() {
@@ -231,16 +244,16 @@ class ExpenseTracker {
     }
 
     // Actualizar opciones de categoría según el tipo
-    updateCategoryOptions() {
+    async updateCategoryOptions() {
         const type = document.querySelector('input[name="type"]:checked').value;
-        this.renderCategories(type);
+        await this.renderCategories(type);
     }
 
     // Renderizar categorías dinámicamente en el select
-    renderCategories(type = null) {
+    async renderCategories(type = null) {
         const categorySelect = document.getElementById('category');
-        const data = storage.getData();
-        if (!data || !data.categories) return;
+        const categories = await this.storage.getCategories();
+        if (!categories) return;
 
         // Limpiar opciones excepto la primera
         categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
@@ -249,8 +262,8 @@ class ExpenseTracker {
         const selectedType = type || document.querySelector('input[name="type"]:checked').value;
         
         // Mostrar solo las categorías del tipo seleccionado
-        if (data.categories[selectedType] && data.categories[selectedType].length > 0) {
-            data.categories[selectedType].forEach(cat => {
+        if (categories[selectedType] && categories[selectedType].length > 0) {
+            categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
                 option.textContent = `${cat.icon} ${cat.name}`;
@@ -286,13 +299,13 @@ class ExpenseTracker {
     }
 
     // Renderizar listas de categorías en el modal
-    renderCategoryLists(type) {
+    async renderCategoryLists(type) {
         const incomeListContainer = document.querySelector('#income-category-list').parentElement;
         const expenseListContainer = document.querySelector('#expense-category-list').parentElement;
         const incomeList = document.getElementById('income-category-list');
         const expenseList = document.getElementById('expense-category-list');
-        const data = storage.getData();
-        if (!data || !data.categories) return;
+        const categories = await this.storage.getCategories();
+        if (!categories) return;
 
         incomeList.innerHTML = '';
         expenseList.innerHTML = '';
@@ -301,7 +314,7 @@ class ExpenseTracker {
             incomeListContainer.style.display = 'block';
             expenseListContainer.style.display = 'none';
 
-            data.categories.income.forEach(cat => {
+            categories.income.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -315,7 +328,7 @@ class ExpenseTracker {
             incomeListContainer.style.display = 'none';
             expenseListContainer.style.display = 'block';
 
-            data.categories.expense.forEach(cat => {
+            categories.expense.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -330,7 +343,7 @@ class ExpenseTracker {
             incomeListContainer.style.display = 'block';
             expenseListContainer.style.display = 'block';
 
-            data.categories.income.forEach(cat => {
+            categories.income.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -341,7 +354,7 @@ class ExpenseTracker {
                 incomeList.appendChild(li);
             });
 
-            data.categories.expense.forEach(cat => {
+            categories.expense.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -355,7 +368,7 @@ class ExpenseTracker {
     }
 
     // Añadir categoría nueva
-    addCategory(type) {
+    async addCategory(type) {
         const nameInput = document.getElementById(`new-${type}-category-name`);
         const iconInput = document.getElementById(`new-${type}-category-icon`);
         const name = nameInput.value.trim();
@@ -372,9 +385,10 @@ class ExpenseTracker {
 
         const newCategory = { id, name, icon };
 
-        if (storage.addCategory(type, newCategory)) {
-            this.renderCategoryLists(type);
-            this.renderCategories(type);
+        const success = await this.storage.addCategory(type, newCategory);
+        if (success) {
+            await this.renderCategoryLists(type);
+            await this.renderCategories(type);
             nameInput.value = '';
             iconInput.value = '';
             this.showNotification(`Categoría "${name}" agregada`, 'success');
@@ -384,13 +398,14 @@ class ExpenseTracker {
     }
 
     // Eliminar categoría
-    deleteCategory(type, categoryId) {
+    async deleteCategory(type, categoryId) {
         this.showConfirmDialog('¿Estás seguro de que quieres eliminar esta categoría?')
-            .then(confirmed => {
+            .then(async confirmed => {
                 if (confirmed) {
-                    if (storage.deleteCategory(type, categoryId)) {
-                        this.renderCategoryLists(type);
-                        this.renderCategories(type);
+                    const success = await this.storage.deleteCategory(type, categoryId);
+                    if (success) {
+                        await this.renderCategoryLists(type);
+                        await this.renderCategories(type);
                         this.showNotification('Categoría eliminada', 'info');
                     } else {
                         alert('No se pudo eliminar la categoría');
@@ -432,7 +447,7 @@ class ExpenseTracker {
     }
 
     // Agregar transacción
-    addTransaction() {
+    async addTransaction() {
         const formData = {
             type: document.querySelector('input[name="type"]:checked').value,
             amount: parseFloat(document.getElementById('amount').value),
@@ -453,40 +468,48 @@ class ExpenseTracker {
         }
 
         // Guardar transacción
-        storage.addTransaction(formData);
-
-        // Actualizar UI
-        this.updateBalance();
-        this.loadTransactions();
+        const result = await this.storage.addTransaction(formData);
         
-        // Limpiar formulario
-        document.getElementById('transaction-form').reset();
-        this.setCurrentDate();
-        this.updateCategoryOptions();
+        if (result) {
+            // Actualizar UI
+            await this.updateBalance();
+            await this.loadTransactions();
+            
+            // Limpiar formulario
+            document.getElementById('transaction-form').reset();
+            this.setCurrentDate();
+            await this.updateCategoryOptions();
 
-        // Mostrar mensaje de éxito
-        this.showNotification('Transacción agregada exitosamente', 'success');
+            // Mostrar mensaje de éxito
+            this.showNotification('Transacción agregada exitosamente', 'success');
 
-        // Cambiar a la pestaña de transacciones
-        this.switchTab('list');
+            // Cambiar a la pestaña de transacciones
+            this.switchTab('list');
+        } else {
+            this.showNotification('Error al agregar la transacción', 'error');
+        }
     }
 
     // Eliminar transacción
-    deleteTransaction(id) {
+    async deleteTransaction(id) {
         this.showConfirmDialog('¿Estás seguro de que quieres eliminar esta transacción?')
-            .then(confirmed => {
+            .then(async confirmed => {
                 if (confirmed) {
-                    storage.deleteTransaction(id);
-                    this.updateBalance();
-                    this.loadTransactions();
-                    this.showNotification('Transacción eliminada', 'info');
+                    const success = await this.storage.deleteTransaction(id);
+                    if (success) {
+                        await this.updateBalance();
+                        await this.loadTransactions();
+                        this.showNotification('Transacción eliminada', 'info');
+                    } else {
+                        this.showNotification('Error al eliminar la transacción', 'error');
+                    }
                 }
             });
     }
 
     // Actualizar balance
-    updateBalance() {
-        const totals = storage.calculateTotals();
+    async updateBalance() {
+        const totals = await this.storage.calculateTotals();
         
         document.getElementById('balance').textContent = `$${totals.balance.toFixed(2)}`;
         document.getElementById('total-income').textContent = `$${totals.income.toFixed(2)}`;
@@ -504,10 +527,10 @@ class ExpenseTracker {
     }
 
     // Cargar transacciones
-    loadTransactions() {
+    async loadTransactions() {
         const type = document.getElementById('filter-type').value;
         const month = document.getElementById('filter-month').value;
-        const transactions = storage.getFilteredTransactions(type, month);
+        const transactions = await this.storage.getTransactions({ type, month });
         const listContainer = document.getElementById('transactions-list');
 
         if (transactions.length === 0) {
@@ -520,8 +543,9 @@ class ExpenseTracker {
             return;
         }
 
-        listContainer.innerHTML = transactions.map(transaction => {
-            const categoryInfo = storage.getCategoryInfo(transaction.category);
+        // Construir HTML de todas las transacciones
+        const transactionsHTML = await Promise.all(transactions.map(async transaction => {
+            const categoryInfo = await this.storage.getCategoryInfo(transaction.category);
             const date = new Date(transaction.date);
             const formattedDate = date.toLocaleDateString('es-ES', { 
                 day: 'numeric', 
@@ -546,13 +570,15 @@ class ExpenseTracker {
                     </div>
                 </div>
             `;
-        }).join('');
+        }));
+        
+        listContainer.innerHTML = transactionsHTML.join('');
     }
 
     // Cargar filtro de meses
-    loadMonthFilter() {
+    async loadMonthFilter() {
         const monthFilter = document.getElementById('filter-month');
-        const availableMonths = storage.getAvailableMonths();
+        const availableMonths = await this.storage.getAvailableMonths();
         
         // Nombres de meses en español
         const monthNames = [
@@ -572,6 +598,38 @@ class ExpenseTracker {
             `;
         });
     }
+    
+    // Manejar cambios en tiempo real
+    handleRealtimeChanges(changes) {
+        changes.forEach(change => {
+            if (change.type === 'added' || change.type === 'modified') {
+                // Actualizar UI cuando se agregan o modifican transacciones
+                this.updateBalance();
+                this.loadTransactions();
+                this.showNotification('Datos sincronizados', 'info');
+            } else if (change.type === 'removed') {
+                // Actualizar UI cuando se eliminan transacciones
+                this.updateBalance();
+                this.loadTransactions();
+            }
+        });
+    }
+    
+    // Actualizar estado de sincronización
+    updateSyncStatus() {
+        if (this.storage.getSyncStatus) {
+            const status = this.storage.getSyncStatus();
+            
+            // Puedes mostrar un indicador visual del estado de sincronización
+            if (status.cloudEnabled && status.online) {
+                console.log('Sincronización en la nube activa');
+                // Aquí puedes agregar un ícono de nube en la UI
+            } else if (!status.online) {
+                console.log('Trabajando sin conexión');
+                // Mostrar indicador offline
+            }
+        }
+    }
 
     // Mostrar notificación
     showNotification(message, type = 'info') {
@@ -590,19 +648,19 @@ class ExpenseTracker {
         }, 3000);
     }
 
-    openCategoryPicker() {
+    async openCategoryPicker() {
         const type = document.querySelector('input[name="type"]:checked').value;
-        const data = storage.getData();
+        const allCategories = await this.storage.getCategories();
         
         // Verificar que existan datos y categorías
-        if (!data || !data.categories || !data.categories[type] || data.categories[type].length === 0) {
+        if (!allCategories || !allCategories[type] || allCategories[type].length === 0) {
             // Si no hay categorías, mostrar un mensaje
             this.showNotification('No hay categorías disponibles. Por favor, crea una categoría primero.', 'info');
             this.openCategoryModal();
             return;
         }
         
-        const categories = data.categories[type];
+        const categories = allCategories[type];
         const pickerList = document.getElementById('category-picker-list');
         
         // Limpiar lista
@@ -804,10 +862,10 @@ class ExpenseTracker {
         return closestIndex;
     }
 
-    selectCategoryFromPicker(idx) {
+    async selectCategoryFromPicker(idx) {
         const type = document.querySelector('input[name="type"]:checked').value;
-        const data = storage.getData();
-        const categories = data.categories[type];
+        const allCategories = await this.storage.getCategories();
+        const categories = allCategories[type];
         const cat = categories[idx];
         if (cat) {
             // Seleccionar en el select real
@@ -871,12 +929,17 @@ class ExpenseTracker {
     }
 
     async refreshData() {
-        // Simular carga de datos
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Sincronizar con la nube si está disponible
+        if (this.storage.syncData) {
+            await this.storage.syncData();
+        }
         
         // Recargar datos
-        this.loadTransactions();
-        this.updateStats();
+        await this.loadTransactions();
+        await this.updateBalance();
+        if (this.currentTab === 'stats' && chartManager) {
+            chartManager.updateAllCharts();
+        }
         this.showNotification('Datos actualizados', 'success');
     }
 
