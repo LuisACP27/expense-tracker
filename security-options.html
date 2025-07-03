@@ -8,9 +8,6 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#4CAF50" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <script src="js/language.js"></script>
-    <script src="js/themes.js"></script>
-    <script src="js/security.js"></script>
     <style>
         .security-container {
             min-height: 100vh;
@@ -189,109 +186,559 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <a href="settings.html" class="back-btn" title="Volver" aria-label="Volver">←</a>
-            <h1 id="security-options-title">Opciones de Seguridad</h1>
-        </header>
-
-        <div class="security-options-page">
-            <!-- Verificación actual -->
-            <div id="auth-verification" class="settings-section">
-                <h3 id="verify-identity-title">Verificar Identidad</h3>
-                <p id="verify-desc">Por favor, ingresa tu PIN o contraseña actual para continuar.</p>
-                
-                <div class="form-group">
-                    <label for="current-auth" id="current-auth-label">PIN/Contraseña actual</label>
-                    <input type="password" id="current-auth" placeholder="Ingresa tu PIN o contraseña">
+    <div class="security-container">
+        <div class="security-card">
+            <h1 class="security-title">Opciones de Seguridad</h1>
+            <p class="security-subtitle">Elige cómo quieres proteger tu cuenta</p>
+            
+            <div class="user-info">
+                <img id="user-avatar" src="https://via.placeholder.com/50" alt="Avatar" class="user-avatar">
+                <div>
+                    <p id="user-name" class="user-name">Nombre de Usuario</p>
+                    <p id="user-email" class="user-email">usuario@ejemplo.com</p>
                 </div>
-                
-                <button id="verify-auth" class="btn btn-primary">Verificar</button>
             </div>
             
-            <!-- Opciones de seguridad (ocultas hasta verificación) -->
-            <div id="security-config" class="settings-section hidden">
-                <h3 id="security-type-title">Tipo de Seguridad</h3>
-                
-                <div class="security-type-selector">
-                    <div class="form-group">
-                        <label>
-                            <input type="radio" name="security-type" value="pin" id="pin-option">
-                            <span id="pin-option-label">PIN de 4 dígitos</span>
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="radio" name="security-type" value="password" id="password-option">
-                            <span id="password-option-label">Contraseña</span>
-                        </label>
+            <div class="security-options">
+                <div class="security-option" id="option-pin">
+                    <div class="security-option-icon">🔢</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">PIN</h3>
+                        <p class="security-option-description">Configura un código PIN de 4 dígitos para acceder rápidamente</p>
                     </div>
                 </div>
                 
-                <div id="new-pin-section" class="auth-input-section">
-                    <h4 id="new-pin-title">Nuevo PIN</h4>
-                    <div class="form-group">
-                        <label for="new-pin" id="new-pin-label">PIN de 4 dígitos</label>
-                        <input type="password" id="new-pin" maxlength="4" pattern="[0-9]{4}" placeholder="1234">
+                <div class="security-option" id="option-password">
+                    <div class="security-option-icon">🔐</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">Contraseña</h3>
+                        <p class="security-option-description">Establece una contraseña personalizada</p>
                     </div>
-                    <div class="form-group">
-                        <label for="confirm-pin" id="confirm-pin-label">Confirmar PIN</label>
-                        <input type="password" id="confirm-pin" maxlength="4" pattern="[0-9]{4}" placeholder="1234">
                 </div>
-            </div>
-            
-                <div id="new-password-section" class="auth-input-section hidden">
-                    <h4 id="new-password-title">Nueva Contraseña</h4>
-                    <div class="form-group">
-                        <label for="new-password" id="new-password-label">Contraseña</label>
-                        <input type="password" id="new-password" minlength="6" placeholder="Mínimo 6 caracteres">
+                
+                <div class="security-option" id="option-biometric">
+                    <div class="security-option-icon">👆</div>
+                    <div class="security-option-text">
+                        <h3 class="security-option-title">Huella Digital</h3>
+                        <p class="security-option-description">Usa tu huella digital para un acceso más seguro</p>
                     </div>
-                    <div class="form-group">
-                        <label for="confirm-password" id="confirm-password-label">Confirmar Contraseña</label>
-                        <input type="password" id="confirm-password" minlength="6" placeholder="Confirma tu contraseña">
                 </div>
             </div>
             
-                <div class="settings-actions">
-                    <button id="save-security" class="btn btn-primary">Guardar Cambios</button>
-                    <button id="cancel-security" class="btn btn-secondary">Cancelar</button>
-                </div>
+            <button id="btn-back" class="btn-secondary" style="margin-top: 1rem; width: 100%;">Volver atrás</button>
+            
+            <!-- Configuración de PIN -->
+            <div id="pin-setup">
+                <h3>Configura tu PIN</h3>
+                <div class="setup-form">
+                    <p>Ingresa un código PIN de 4 dígitos:</p>
+                    <div class="pin-input">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="0">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="1">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="2">
+                        <input type="password" maxlength="1" class="pin-digit" data-index="3">
+                    </div>
+                    <p>Confirma tu PIN:</p>
+                    <div class="pin-input">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="0">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="1">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="2">
+                        <input type="password" maxlength="1" class="pin-digit-confirm" data-index="3">
+                    </div>
+                    <p id="pin-error" class="error-message"></p>
+                    <button id="save-pin" class="btn-continue">Guardar PIN</button>
                 </div>
             </div>
             
-        <!-- Modal de confirmación -->
-        <div id="confirm-modal" class="modal hidden">
-            <div class="modal-content">
-                <h3 id="confirm-title">Confirmar cambios</h3>
-                <p id="confirm-message">¿Estás seguro de que quieres cambiar tu método de seguridad?</p>
-                <div class="modal-buttons">
-                    <button id="confirm-yes" class="btn btn-primary">Confirmar</button>
-                    <button id="confirm-no" class="btn btn-secondary">Cancelar</button>
-                </div>
+            <!-- Configuración de Contraseña -->
+            <div id="password-setup">
+                <h3>Configura tu Contraseña</h3>
+                <div class="setup-form">
+                    <input type="password" id="password" class="password-input" placeholder="Ingresa tu contraseña">
+                    <input type="password" id="confirm-password" class="password-input" placeholder="Confirma tu contraseña">
+                    <p id="password-error" class="error-message"></p>
+                    <button id="save-password" class="btn-continue">Guardar Contraseña</button>
                 </div>
             </div>
             
-        <!-- Notification -->
-        <div id="notification" class="notification hidden">
-            <span id="notification-message"></span>
+            <!-- Configuración de Huella Digital -->
+            <div id="biometric-setup">
+                <h3>Configura la Huella Digital</h3>
+                <div class="setup-form">
+                    <div id="fingerprint-button" class="biometric-button">
+                        <span class="fingerprint-icon">👆</span>
+                        <span>Toca para configurar la huella digital</span>
+                    </div>
+                    <p id="biometric-error" class="error-message"></p>
+                    <button id="save-biometric" class="btn-continue">Guardar Configuración</button>
+                </div>
+            </div>
+            
+            <button id="btn-continue" class="btn-continue" style="display: none;">Continuar a la Aplicación</button>
         </div>
     </div>
     
-    <!-- Scripts -->
+    <!-- Modal de verificación de seguridad -->
+    <div id="auth-verify-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>Verificación de Seguridad</h3>
+            <p id="verify-message">Ingresa tu PIN actual para continuar</p>
+            
+            <!-- Para PIN -->
+            <div id="verify-pin-section" style="display: none;">
+                <input type="password" id="verify-pin-input" class="password-input" maxlength="4" placeholder="PIN actual">
+            </div>
+            
+            <!-- Para contraseña -->
+            <div id="verify-password-section" style="display: none;">
+                <input type="password" id="verify-password-input" class="password-input" placeholder="Contraseña actual">
+            </div>
+            
+            <p id="verify-error" class="error-message"></p>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="verify-confirm" class="btn-continue" style="flex: 1;">Verificar</button>
+                <button id="verify-cancel" class="btn-secondary" style="flex: 1;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    <!-- Security Manager -->
+    <script src="js/security.js"></script>
+    
     <script>
-        // Verificar si se llegó aquí para cambiar configuración
-        const urlParams = new URLSearchParams(window.location.search);
-        const isChanging = urlParams.get('change') === 'true';
+        // Variable global para el prefijo del usuario
+        let userPrefix = '';
         
-        document.addEventListener('DOMContentLoaded', function() {
-            // Aplicar tema actual
-            if (window.appTheme) {
-                window.appTheme.applyCurrentTheme();
+        // Cargar información del usuario
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = localStorage.getItem('user_id');
+            const userName = localStorage.getItem('user_name');
+            const userEmail = localStorage.getItem('user_email');
+            const userPhoto = localStorage.getItem('user_photo');
+            
+            // Obtener o crear el prefijo único para este usuario
+            userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
+            localStorage.setItem('current_user_prefix', userPrefix);
+            
+            // Verificar si el usuario ya tiene configuración de seguridad
+            const hasSecurityConfig = localStorage.getItem(`${userPrefix}_auth_type`);
+            const isChanging = window.location.search.includes('change=true');
+            
+            // Si ya tiene configuración y no es un cambio, redirigir a pin.html
+            if (hasSecurityConfig && !isChanging) {
+                window.location.href = 'pin.html';
+                return;
+            }
+
+            // Si estamos cambiando la configuración, verificar autenticación primero
+            if (isChanging) {
+                const currentMethod = localStorage.getItem(`${userPrefix}_auth_type`);
+                
+                // Primero verificar la autenticación actual
+                if (currentMethod === 'pin' || currentMethod === 'password') {
+                    // Mostrar modal de verificación
+                    showAuthVerificationModal(currentMethod, userPrefix, () => {
+                        // Si la verificación es exitosa, continuar
+                        clearPreviousSecurityConfig();
+                    });
+                } else {
+                    clearPreviousSecurityConfig();
+                }
             }
             
-            new SecurityOptionsPage(isChanging);
+            if (userName) document.getElementById('user-name').textContent = userName;
+            if (userEmail) document.getElementById('user-email').textContent = userEmail;
+            if (userPhoto) document.getElementById('user-avatar').src = userPhoto;
+            
+            // Configurar event listeners
+            document.getElementById('option-pin').addEventListener('click', () => showSetupForm('pin'));
+            document.getElementById('option-password').addEventListener('click', () => showSetupForm('password'));
+            document.getElementById('option-biometric').addEventListener('click', () => showSetupForm('biometric'));
+            
+            document.getElementById('save-pin').addEventListener('click', savePin);
+            document.getElementById('save-password').addEventListener('click', savePassword);
+            document.getElementById('fingerprint-button').addEventListener('click', setupBiometric);
+            document.getElementById('save-biometric').addEventListener('click', saveBiometric);
+            document.getElementById('btn-continue').addEventListener('click', continueToApp);
+            document.getElementById('btn-back').addEventListener('click', goBack);
+            
+            setupPinInputs();
+            loadLanguage();
+
+            // Si estamos cambiando la configuración, limpiar la anterior
+            if (isChanging) {
+                clearPreviousSecurityConfig();
+            }
         });
+
+        // Limpiar configuración de seguridad anterior
+        function clearPreviousSecurityConfig() {
+            localStorage.removeItem(`${userPrefix}_pin`);
+            localStorage.removeItem(`${userPrefix}_password`);
+            localStorage.removeItem(`${userPrefix}_biometric_enabled`);
+            sessionStorage.removeItem('pin_ok');
+        }
+        
+        // Cargar y aplicar idioma
+        function loadLanguage() {
+            const userLanguage = localStorage.getItem('user_language') || 'es';
+            updateLanguageUI(userLanguage);
+        }
+        
+        // Actualizar UI según el idioma
+        function updateLanguageUI(lang) {
+            const translations = {
+                'es': {
+                    title: 'Opciones de Seguridad',
+                    subtitle: 'Elige cómo quieres proteger tu cuenta',
+                    pinOption: 'PIN',
+                    pinDesc: 'Configura un código PIN de 4 dígitos para acceder rápidamente',
+                    passwordOption: 'Contraseña',
+                    passwordDesc: 'Establece una contraseña personalizada',
+                    biometricOption: 'Huella Digital',
+                    biometricDesc: 'Usa tu huella digital para un acceso más seguro',
+                    continueBtn: 'Continuar a la Aplicación'
+                },
+                'en': {
+                    title: 'Security Options',
+                    subtitle: 'Choose how you want to protect your account',
+                    pinOption: 'PIN',
+                    pinDesc: 'Set up a 4-digit PIN code for quick access',
+                    passwordOption: 'Password',
+                    passwordDesc: 'Set a custom password',
+                    biometricOption: 'Fingerprint',
+                    biometricDesc: 'Use your fingerprint for more secure access',
+                    continueBtn: 'Continue to App'
+                }
+            };
+            
+            const t = translations[lang] || translations['es'];
+            
+            // Actualizar textos
+            document.querySelector('.security-title').textContent = t.title;
+            document.querySelector('.security-subtitle').textContent = t.subtitle;
+            
+            // Opciones de seguridad
+            document.querySelector('#option-pin .security-option-title').textContent = t.pinOption;
+            document.querySelector('#option-pin .security-option-description').textContent = t.pinDesc;
+            document.querySelector('#option-password .security-option-title').textContent = t.passwordOption;
+            document.querySelector('#option-password .security-option-description').textContent = t.passwordDesc;
+            document.querySelector('#option-biometric .security-option-title').textContent = t.biometricOption;
+            document.querySelector('#option-biometric .security-option-description').textContent = t.biometricDesc;
+            
+            // Botón de continuar
+            document.getElementById('btn-continue').textContent = t.continueBtn;
+            
+            // Actualizar el atributo lang del HTML
+            document.documentElement.lang = lang;
+        }
+        
+        // Mostrar formulario de configuración seleccionado
+        function showSetupForm(type) {
+            // Ocultar todos los formularios
+            document.getElementById('pin-setup').style.display = 'none';
+            document.getElementById('password-setup').style.display = 'none';
+            document.getElementById('biometric-setup').style.display = 'none';
+            document.getElementById('btn-continue').style.display = 'none';
+            
+            // Mostrar el formulario seleccionado
+            document.getElementById(`${type}-setup`).style.display = 'block';
+            
+            // Resaltar opción seleccionada
+            document.querySelectorAll('.security-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.getElementById(`option-${type}`).classList.add('selected');
+        }
+        
+        // Configurar inputs de PIN para saltar al siguiente
+        function setupPinInputs() {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinDigitsConfirm = document.querySelectorAll('.pin-digit-confirm');
+            
+            // Configurar inputs de PIN original
+            pinDigits.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1) {
+                        if (index < pinDigits.length - 1) {
+                            pinDigits[index + 1].focus();
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value.length === 0) {
+                        if (index > 0) {
+                            pinDigits[index - 1].focus();
+                        }
+                    }
+                });
+            });
+            
+            // Configurar inputs de confirmación de PIN
+            pinDigitsConfirm.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1) {
+                        if (index < pinDigitsConfirm.length - 1) {
+                            pinDigitsConfirm[index + 1].focus();
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value.length === 0) {
+                        if (index > 0) {
+                            pinDigitsConfirm[index - 1].focus();
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Guardar PIN
+        async function savePin() {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinDigitsConfirm = document.querySelectorAll('.pin-digit-confirm');
+            const errorElement = document.getElementById('pin-error');
+            
+            // Obtener valores de PIN
+            let pin = '';
+            let pinConfirm = '';
+            
+            pinDigits.forEach(input => pin += input.value);
+            pinDigitsConfirm.forEach(input => pinConfirm += input.value);
+            
+            // Validar PIN
+            if (pin.length !== 4) {
+                errorElement.textContent = 'El PIN debe tener 4 dígitos';
+                return;
+            }
+            
+            if (pin !== pinConfirm) {
+                errorElement.textContent = 'Los PINs no coinciden';
+                return;
+            }
+            
+            // Guardar PIN usando el security manager si está disponible
+            let success = false;
+            if (window.securityManager) {
+                success = await window.securityManager.saveCredentials(userPrefix, 'pin', pin);
+            } else {
+                // Fallback al método antiguo
+                localStorage.setItem(`${userPrefix}_auth_type`, 'pin');
+                localStorage.setItem(`${userPrefix}_pin`, pin);
+                success = true;
+            }
+            
+            if (success) {
+                // Mostrar mensaje de éxito y botón para continuar
+                errorElement.textContent = '';
+                errorElement.className = 'success-message';
+                errorElement.textContent = 'PIN configurado correctamente';
+                
+                document.getElementById('btn-continue').style.display = 'block';
+            } else {
+                errorElement.textContent = 'Error al guardar el PIN';
+            }
+        }
+        
+        // Guardar contraseña
+        async function savePassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorElement = document.getElementById('password-error');
+            
+            // Validar contraseña
+            if (password.length < 6) {
+                errorElement.textContent = 'La contraseña debe tener al menos 6 caracteres';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                errorElement.textContent = 'Las contraseñas no coinciden';
+                return;
+            }
+            
+            // Guardar contraseña usando el security manager si está disponible
+            let success = false;
+            if (window.securityManager) {
+                success = await window.securityManager.saveCredentials(userPrefix, 'password', password);
+            } else {
+                // Fallback al método antiguo
+                localStorage.setItem(`${userPrefix}_auth_type`, 'password');
+                localStorage.setItem(`${userPrefix}_password`, password);
+                success = true;
+            }
+            
+            if (success) {
+                // Mostrar mensaje de éxito y botón para continuar
+                errorElement.textContent = '';
+                errorElement.className = 'success-message';
+                errorElement.textContent = 'Contraseña configurada correctamente';
+                
+                document.getElementById('btn-continue').style.display = 'block';
+            } else {
+                errorElement.textContent = 'Error al guardar la contraseña';
+            }
+        }
+        
+        // Configurar biometría
+        function setupBiometric() {
+            // Aquí iría la lógica para configurar la huella digital
+            // Por ahora solo simulamos el proceso
+            const errorElement = document.getElementById('biometric-error');
+            
+            if (!navigator.credentials || !window.PublicKeyCredential) {
+                errorElement.textContent = 'Tu dispositivo no soporta autenticación biométrica';
+                return;
+            }
+            
+            // Simular proceso exitoso
+            localStorage.setItem(`${userPrefix}_auth_type`, 'biometric');
+            localStorage.setItem(`${userPrefix}_biometric_enabled`, 'true');
+            
+            errorElement.textContent = '';
+            errorElement.className = 'success-message';
+            errorElement.textContent = 'Huella digital configurada correctamente';
+            
+            document.getElementById('btn-continue').style.display = 'block';
+        }
+        
+        // Guardar configuración biométrica
+        function saveBiometric() {
+            // La configuración ya se guardó en setupBiometric()
+            // Este método solo maneja la finalización del proceso
+            document.getElementById('btn-continue').style.display = 'block';
+        }
+        
+        // Continuar a la aplicación
+        function continueToApp() {
+            // Establecer flag de sesión
+            sessionStorage.setItem('pin_ok', '1');
+            
+            // Redirigir a la aplicación principal
+            window.location.href = 'index.html';
+        }
+
+        // Función para volver atrás
+        function goBack() {
+            const isChanging = window.location.search.includes('change=true');
+            window.location.href = isChanging ? 'settings.html' : 'welcome.html';
+        }
+        
+        // Función para limpiar configuración de seguridad anterior
+        function clearPreviousSecurityConfig() {
+            // Limpiar configuraciones anteriores
+            localStorage.removeItem(`${userPrefix}_pin`);
+            localStorage.removeItem(`${userPrefix}_password`);
+            localStorage.removeItem(`${userPrefix}_auth_type`);
+            
+            // Si existe el security manager, limpiar también las credenciales seguras
+            if (window.securityManager) {
+                window.securityManager.clearCredentials(userPrefix);
+            }
+        }
+        
+        // Función para mostrar modal de verificación
+        function showAuthVerificationModal(authType, userPrefix, onSuccess) {
+            const modal = document.getElementById('auth-verify-modal');
+            const verifyMessage = document.getElementById('verify-message');
+            const verifyPinSection = document.getElementById('verify-pin-section');
+            const verifyPasswordSection = document.getElementById('verify-password-section');
+            const verifyPinInput = document.getElementById('verify-pin-input');
+            const verifyPasswordInput = document.getElementById('verify-password-input');
+            const verifyError = document.getElementById('verify-error');
+            const verifyConfirm = document.getElementById('verify-confirm');
+            const verifyCancel = document.getElementById('verify-cancel');
+            
+            // Limpiar estado anterior
+            verifyError.textContent = '';
+            verifyPinInput.value = '';
+            verifyPasswordInput.value = '';
+            
+            // Configurar según tipo
+            if (authType === 'pin') {
+                verifyMessage.textContent = 'Ingresa tu PIN actual para continuar';
+                verifyPinSection.style.display = 'block';
+                verifyPasswordSection.style.display = 'none';
+                modal.classList.remove('hidden');
+                verifyPinInput.focus();
+            } else if (authType === 'password') {
+                verifyMessage.textContent = 'Ingresa tu contraseña actual para continuar';
+                verifyPinSection.style.display = 'none';
+                verifyPasswordSection.style.display = 'block';
+                modal.classList.remove('hidden');
+                verifyPasswordInput.focus();
+            }
+            
+            // Manejar verificación
+            const handleVerify = async () => {
+                let isValid = false;
+                
+                if (authType === 'pin') {
+                    const enteredPin = verifyPinInput.value;
+                    const storedPin = localStorage.getItem(`${userPrefix}_pin`);
+                    
+                    if (storedPin && enteredPin === storedPin) {
+                        isValid = true;
+                    } else if (window.securityManager) {
+                        // Verificar con el nuevo sistema de seguridad
+                        isValid = await window.securityManager.verifyCredentials(userPrefix, 'pin', enteredPin);
+                    }
+                } else if (authType === 'password') {
+                    const enteredPassword = verifyPasswordInput.value;
+                    const storedPassword = localStorage.getItem(`${userPrefix}_password`);
+                    
+                    if (storedPassword && enteredPassword === storedPassword) {
+                        isValid = true;
+                    } else if (window.securityManager) {
+                        // Verificar con el nuevo sistema de seguridad
+                        isValid = await window.securityManager.verifyCredentials(userPrefix, 'password', enteredPassword);
+                    }
+                }
+                
+                if (isValid) {
+                    modal.classList.add('hidden');
+                    onSuccess();
+                } else {
+                    verifyError.textContent = authType === 'pin' ? 'PIN incorrecto' : 'Contraseña incorrecta';
+                    if (authType === 'pin') {
+                        verifyPinInput.value = '';
+                        verifyPinInput.focus();
+                    } else {
+                        verifyPasswordInput.value = '';
+                        verifyPasswordInput.focus();
+                    }
+                }
+            };
+            
+            // Event listeners
+            verifyConfirm.onclick = handleVerify;
+            verifyCancel.onclick = () => {
+                modal.classList.add('hidden');
+                window.location.href = 'settings.html';
+            };
+            
+            // Enter key para verificar
+            verifyPinInput.onkeypress = (e) => {
+                if (e.key === 'Enter' || (verifyPinInput.value.length === 4)) {
+                    handleVerify();
+                }
+            };
+            
+            verifyPasswordInput.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    handleVerify();
+                }
+            };
+        }
     </script>
 </body>
 </html> 

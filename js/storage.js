@@ -213,19 +213,6 @@ class Storage {
         return Array.from(months).sort().reverse();
     }
 
-    // Obtener categorías
-    getCategories() {
-        const data = this.getData();
-        return data ? data.categories : null;
-    }
-
-    // Guardar categorías
-    saveCategories(categories) {
-        const data = this.getData();
-        data.categories = categories;
-        this.saveData(data);
-    }
-
     // Obtener información de categoría
     getCategoryInfo(categoryId) {
         const data = this.getData();

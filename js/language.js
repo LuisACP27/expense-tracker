@@ -39,7 +39,7 @@ const translations = {
         themeRed: 'Rojo',
         themeOrange: 'Naranja',
         themeGray: 'Gris',
-        darkMode: 'Modo Oscuro',
+        themeDark: 'Modo Oscuro',
         
         // Mensajes
         confirmLogout: '¿Estás seguro de que quieres cerrar sesión?',
@@ -133,7 +133,7 @@ const translations = {
         themeRed: 'Red',
         themeOrange: 'Orange',
         themeGray: 'Gray',
-        darkMode: 'Dark Mode',
+        themeDark: 'Dark Mode',
         
         confirmLogout: 'Are you sure you want to logout?',
         confirmDelete: 'Are you sure you want to delete all data? This action cannot be undone.',
@@ -225,7 +225,7 @@ const translations = {
         themeRed: 'Vermelho',
         themeOrange: 'Laranja',
         themeGray: 'Cinza',
-        darkMode: 'Modo Escuro',
+        themeDark: 'Modo Escuro',
         
         confirmLogout: 'Tem certeza que deseja sair?',
         confirmDelete: 'Tem certeza que deseja excluir todos os dados? Esta ação não pode ser desfeita.',
@@ -317,7 +317,7 @@ const translations = {
         themeRed: 'Rouge',
         themeOrange: 'Orange',
         themeGray: 'Gris',
-        darkMode: 'Mode Sombre',
+        themeDark: 'Mode Sombre',
         
         confirmLogout: 'Êtes-vous sûr de vouloir vous déconnecter?',
         confirmDelete: 'Êtes-vous sûr de vouloir supprimer toutes les données? Cette action ne peut pas être annulée.',

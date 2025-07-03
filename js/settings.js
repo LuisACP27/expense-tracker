@@ -3,66 +3,6 @@
 class SettingsPage {
     constructor() {
         this.userPrefix = localStorage.getItem('current_user_prefix') || '';
-        this.themes = {
-            green: {
-                '--primary-color': '#4CAF50',
-                '--secondary-color': '#53C5A8',
-                '--background-color': '#f5f5f5',
-                '--card-background': '#ffffff',
-                '--border-color': '#e0e0e0',
-                '--income-color': '#4CAF50',
-                '--expense-color': '#f44336'
-            },
-            blue: {
-                '--primary-color': '#2196F3',
-                '--secondary-color': '#10d1c2',
-                '--background-color': '#e3f2fd',
-                '--card-background': '#ffffff',
-                '--border-color': '#90caf9',
-                '--income-color': '#2196F3',
-                '--expense-color': '#f44336'
-            },
-
-            red: {
-                '--primary-color': '#e53935',
-                '--secondary-color': '#ff7043',
-                '--background-color': '#fff5f5',
-                '--card-background': '#fff',
-                '--border-color': '#ffcdd2',
-                '--income-color': '#e53935',
-                '--expense-color': '#b71c1c'
-            },
-            purple: {
-                '--primary-color': '#8e24aa',
-                '--secondary-color': '#d82ccd',
-                '--background-color': '#f3e5f5',
-                '--card-background': '#fff',
-                '--border-color': '#ce93d8',
-                '--income-color': '#8e24aa',
-                '--expense-color': '#d500f9'
-            },
-            orange: {
-                '--primary-color': '#fb8c00',
-                '--secondary-color': '#ffb300',
-                '--background-color': '#fff3e0',
-                '--card-background': '#fff',
-                '--border-color': '#ffe0b2',
-                '--income-color': '#fb8c00',
-                '--expense-color': '#e65100'
-            },
-            gray: {
-                '--primary-color': '#757575',
-                '--secondary-color': '#bdbdbd',
-                '--background-color': '#f5f5f5',
-                '--card-background': '#fff',
-                '--border-color': '#e0e0e0',
-                '--income-color': '#757575',
-                '--expense-color': '#bdbdbd'
-            }
-        };
-        // Fijar los colores de texto para todos los temas
-        document.documentElement.style.setProperty('--text-primary', '#212121');
-        document.documentElement.style.setProperty('--text-secondary', '#666666');
         this.init();
     }
 
@@ -73,17 +13,17 @@ class SettingsPage {
 
     setupEventListeners() {
         // Selector de tema
-        document.getElementById('theme-selector').addEventListener('change', (e) => {
+        document.getElementById('theme-select').addEventListener('change', (e) => {
             this.changeTheme(e.target.value, true);
         });
 
-        // Switch de modo oscuro
-        document.getElementById('dark-mode-toggle').addEventListener('change', (e) => {
-            this.toggleDarkMode(e.target.checked);
+        // Switch de modo nocturno
+        document.getElementById('night-mode-toggle').addEventListener('change', (e) => {
+            this.toggleNightMode(e.target.checked);
         });
 
         // Selector de idioma
-        document.getElementById('language-selector').addEventListener('change', (e) => {
+        document.getElementById('language-select').addEventListener('change', (e) => {
             this.changeLanguage(e.target.value, true);
         });
 
@@ -112,32 +52,25 @@ class SettingsPage {
     }
 
     loadSettings() {
-        // Cargar tema actual
-        const currentTheme = window.appTheme ? window.appTheme.getCurrentTheme() : (localStorage.getItem('theme') || 'green');
-        const themeSelector = document.getElementById('theme-selector');
-        if (themeSelector) {
-            themeSelector.value = currentTheme;
-            this.changeTheme(currentTheme, false);
+        // Cargar tema actual usando el sistema global
+        if (window.appTheme) {
+            const currentTheme = window.appTheme.getCurrentTheme();
+            document.getElementById('theme-select').value = currentTheme;
+            
+            // Aplicar el tema actual
+            window.appTheme.applyCurrentTheme();
         }
 
-        // Cargar modo oscuro
-        const darkMode = window.appTheme ? window.appTheme.getDarkMode() : (localStorage.getItem('dark_mode') === 'true');
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        if (darkModeToggle) {
-            darkModeToggle.checked = darkMode;
-            // No llamar toggleDarkMode aquí para evitar notificación
-            if (window.appTheme) {
-                window.appTheme.applyDarkMode(darkMode);
-            }
+        // Cargar modo oscuro usando el sistema global
+        if (window.appTheme) {
+            const darkModeEnabled = window.appTheme.isDarkModeEnabled();
+            document.getElementById('night-mode-toggle').checked = darkModeEnabled;
         }
 
         // Cargar idioma actual
         const currentLang = localStorage.getItem('language') || 'es';
-        const languageSelector = document.getElementById('language-selector');
-        if (languageSelector) {
-            languageSelector.value = currentLang;
-            this.changeLanguage(currentLang, false);
-        }
+        document.getElementById('language-select').value = currentLang;
+        this.changeLanguage(currentLang, false);
 
         // Cargar información del usuario
         this.loadUserInfo();
@@ -163,30 +96,20 @@ class SettingsPage {
     }
 
     changeTheme(theme, showNotification = true) {
-        // Usar el sistema de temas si está disponible
         if (window.appTheme) {
             window.appTheme.changeTheme(theme);
-        } else {
-            // Fallback
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-        }
-        
-        if (showNotification) {
-            this.showNotification('Tema cambiado correctamente', 'success');
+            
+            if (showNotification) {
+                this.showNotification('Tema cambiado correctamente', 'success');
+            }
         }
     }
 
-    toggleDarkMode(enabled) {
-        // Usar el sistema de temas para manejar el modo oscuro
+    toggleNightMode(enabled) {
         if (window.appTheme) {
-            window.appTheme.setDarkMode(enabled);
-        } else {
-            // Fallback si themes.js no está disponible
-            localStorage.setItem('dark_mode', enabled);
+            window.appTheme.toggleDarkMode(enabled);
+            this.showNotification(enabled ? 'Modo oscuro activado' : 'Modo oscuro desactivado', 'success');
         }
-        
-        this.showNotification(enabled ? 'Modo oscuro activado' : 'Modo oscuro desactivado', 'success');
     }
 
     changeLanguage(lang, showNotification = true) {
