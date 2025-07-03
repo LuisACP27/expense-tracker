@@ -113,7 +113,7 @@ class SettingsPage {
 
     loadSettings() {
         // Cargar tema actual
-        const currentTheme = localStorage.getItem('theme') || 'green';
+        const currentTheme = window.appTheme ? window.appTheme.getCurrentTheme() : (localStorage.getItem('theme') || 'green');
         const themeSelector = document.getElementById('theme-selector');
         if (themeSelector) {
             themeSelector.value = currentTheme;
@@ -121,11 +121,14 @@ class SettingsPage {
         }
 
         // Cargar modo oscuro
-        const darkMode = localStorage.getItem('dark_mode') === 'true';
+        const darkMode = window.appTheme ? window.appTheme.getDarkMode() : (localStorage.getItem('dark_mode') === 'true');
         const darkModeToggle = document.getElementById('dark-mode-toggle');
         if (darkModeToggle) {
             darkModeToggle.checked = darkMode;
-            this.toggleDarkMode(darkMode);
+            // No llamar toggleDarkMode aquí para evitar notificación
+            if (window.appTheme) {
+                window.appTheme.applyDarkMode(darkMode);
+            }
         }
 
         // Cargar idioma actual
@@ -160,8 +163,14 @@ class SettingsPage {
     }
 
     changeTheme(theme, showNotification = true) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
+        // Usar el sistema de temas si está disponible
+        if (window.appTheme) {
+            window.appTheme.changeTheme(theme);
+        } else {
+            // Fallback
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
         
         if (showNotification) {
             this.showNotification('Tema cambiado correctamente', 'success');
@@ -169,22 +178,12 @@ class SettingsPage {
     }
 
     toggleDarkMode(enabled) {
-        document.documentElement.classList.toggle('dark-mode', enabled);
-        localStorage.setItem('dark_mode', enabled);
-        
-        // Aplicar estilos del modo oscuro
-        if (enabled) {
-            document.documentElement.style.setProperty('--background-color', '#121212');
-            document.documentElement.style.setProperty('--card-background', '#1e1e1e');
-            document.documentElement.style.setProperty('--text-primary', '#ffffff');
-            document.documentElement.style.setProperty('--text-secondary', '#e0e0e0');
-            document.documentElement.style.setProperty('--border-color', '#424242');
+        // Usar el sistema de temas para manejar el modo oscuro
+        if (window.appTheme) {
+            window.appTheme.setDarkMode(enabled);
         } else {
-            document.documentElement.style.setProperty('--background-color', '#f5f5f5');
-            document.documentElement.style.setProperty('--card-background', '#ffffff');
-            document.documentElement.style.setProperty('--text-primary', '#212121');
-            document.documentElement.style.setProperty('--text-secondary', '#666666');
-            document.documentElement.style.setProperty('--border-color', '#e0e0e0');
+            // Fallback si themes.js no está disponible
+            localStorage.setItem('dark_mode', enabled);
         }
         
         this.showNotification(enabled ? 'Modo oscuro activado' : 'Modo oscuro desactivado', 'success');
