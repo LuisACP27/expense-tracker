@@ -42,17 +42,8 @@
                         <option value="red" id="theme-red">Rojo</option>
                         <option value="orange" id="theme-orange">Naranja</option>
                         <option value="gray" id="theme-gray">Gris</option>
+                        <option value="dark" id="theme-dark">Modo Oscuro</option>
                             </select>
-                        </div>
-                <div class="form-group">
-                    <label for="dark-mode-toggle" id="dark-mode-label">Modo Oscuro</label>
-                    <div class="night-mode-group">
-                        <label class="switch">
-                            <input type="checkbox" id="dark-mode-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <span class="night-mode-label" id="dark-mode-description">Aplicar modo oscuro a cualquier tema</span>
-                    </div>
                         </div>
                 <div class="form-group">
                     <label for="language-selector" id="language-label">Idioma</label>
@@ -194,10 +185,7 @@
                 safeUpdateText('theme-red', t.themeRed);
                 safeUpdateText('theme-orange', t.themeOrange);
                 safeUpdateText('theme-gray', t.themeGray);
-                
-                // Modo oscuro
-                safeUpdateText('dark-mode-label', t.darkMode || 'Modo Oscuro');
-                safeUpdateText('dark-mode-description', t.darkModeDescription || 'Aplicar modo oscuro a cualquier tema');
+                safeUpdateText('theme-dark', t.themeDark);
                 
                 // Menú inferior
                 safeUpdateQueryText('[data-tab="add"] .bottom-nav-text', t.add);
@@ -227,15 +215,6 @@
             
             themeSelector.addEventListener('change', function() {
                 window.appTheme.changeTheme(this.value);
-            });
-            
-            // Configurar toggle de modo oscuro
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            darkModeToggle.checked = window.appTheme.getDarkMode();
-            
-            darkModeToggle.addEventListener('change', function() {
-                window.appTheme.toggleDarkMode();
-                showNotification(this.checked ? 'Modo oscuro activado' : 'Modo oscuro desactivado');
             });
             
             // Configurar selector de idioma
