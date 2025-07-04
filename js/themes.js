@@ -20,16 +20,7 @@ const themes = {
         '--income-color': '#2196F3',
         '--expense-color': '#f44336'
     },
-    dark: {
-        '--primary-color': '#212121',
-        '--primary-color-rgb': '33, 33, 33',
-        '--secondary-color': '#424242',
-        '--background-color': '#121212',
-        '--card-background': '#1e1e1e',
-        '--border-color': '#424242',
-        '--income-color': '#81c784',
-        '--expense-color': '#e57373'
-    },
+
     red: {
         '--primary-color': '#e53935',
         '--primary-color-rgb': '229, 57, 53',
@@ -99,16 +90,71 @@ function changeTheme(themeName) {
         document.documentElement.style.setProperty(key, theme[key]);
     });
     
-    // Manejar modo oscuro
-    if (themeName === 'dark') {
-        document.body.classList.add('night-mode');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#212121');
-    } else {
-        document.body.classList.remove('night-mode');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
-    }
+    // Aplicar meta theme-color
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
+    
+    // Aplicar modo oscuro si está activado
+    const darkMode = getDarkMode();
+    applyDarkMode(darkMode);
     
     return true;
+}
+
+// Función para obtener estado del modo oscuro
+function getDarkMode() {
+    if (localStorage.getItem('user_id')) {
+        const userPrefix = localStorage.getItem('current_user_prefix');
+        return localStorage.getItem(`${userPrefix}_dark_mode`) === 'true';
+    }
+    return false;
+}
+
+// Función para activar/desactivar modo oscuro
+function toggleDarkMode() {
+    const currentState = getDarkMode();
+    const newState = !currentState;
+    
+    // Guardar preferencia
+    if (localStorage.getItem('user_id')) {
+        const userPrefix = localStorage.getItem('current_user_prefix');
+        localStorage.setItem(`${userPrefix}_dark_mode`, newState.toString());
+    }
+    
+    // Aplicar modo oscuro
+    applyDarkMode(newState);
+    
+    return newState;
+}
+
+// Función para aplicar modo oscuro
+function applyDarkMode(isDark) {
+    if (isDark) {
+        // Variables para modo oscuro
+        document.documentElement.style.setProperty('--background-color', '#121212');
+        document.documentElement.style.setProperty('--card-background', '#1e1e1e');
+        document.documentElement.style.setProperty('--text-primary', '#ffffff');
+        document.documentElement.style.setProperty('--text-secondary', '#e0e0e0');
+        document.documentElement.style.setProperty('--border-color', '#424242');
+        
+        document.body.classList.add('night-mode');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121212');
+    } else {
+        // Remover overrides de modo oscuro - el tema actual se aplicará
+        document.documentElement.style.removeProperty('--background-color');
+        document.documentElement.style.removeProperty('--card-background');
+        document.documentElement.style.removeProperty('--text-primary');
+        document.documentElement.style.removeProperty('--text-secondary');
+        document.documentElement.style.removeProperty('--border-color');
+        
+        document.body.classList.remove('night-mode');
+        
+        // Volver al color del tema actual
+        const currentTheme = getCurrentTheme();
+        const theme = themes[currentTheme];
+        if (theme) {
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
+        }
+    }
 }
 
 // Función para aplicar el tema actual
@@ -122,5 +168,8 @@ window.appTheme = {
     themes,
     getCurrentTheme,
     changeTheme,
-    applyCurrentTheme
+    applyCurrentTheme,
+    getDarkMode,
+    toggleDarkMode,
+    applyDarkMode
 }; 

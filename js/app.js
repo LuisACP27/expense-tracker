@@ -120,28 +120,12 @@ class ExpenseTracker {
             });
         }
 
-        // Selector de categoría personalizado
+        // Selector de categoría - funcionamiento normal
         const categorySelect = document.getElementById('category');
         if (categorySelect) {
-            categorySelect.addEventListener('focus', (e) => {
-                e.preventDefault();
-                this.openCategoryPicker();
-            });
-            categorySelect.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                this.openCategoryPicker();
-            });
-        }
-
-        // Cerrar picker
-        const closePickerBtn = document.getElementById('close-category-picker');
-        const pickerModal = document.getElementById('category-picker-modal');
-        if (closePickerBtn) {
-            closePickerBtn.addEventListener('click', () => this.closeCategoryPicker());
-        }
-        if (pickerModal) {
-            pickerModal.addEventListener('mousedown', (e) => {
-                if (e.target === e.currentTarget) this.closeCategoryPicker();
+            // Simplemente dejar que funcione como un select normal
+            categorySelect.addEventListener('change', () => {
+                // Se puede agregar lógica adicional aquí si es necesario
             });
         }
 
