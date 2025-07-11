@@ -3,7 +3,7 @@
 class ExpenseTracker {
     constructor() {
         this.currentTab = 'add';
-        this.storage = typeof storageAdapter !== 'undefined' ? storageAdapter : storage;
+        this.storage = storage; // Usar solo localStorage
         this.init();
     }
 
@@ -29,17 +29,7 @@ class ExpenseTracker {
 
         this.setupSwipeGestures();
         
-        // Configurar listeners en tiempo real si está disponible
-        if (this.storage.setupRealtimeListeners) {
-            this.storage.setupRealtimeListeners({
-                onTransactionsChange: (changes) => {
-                    this.handleRealtimeChanges(changes);
-                }
-            });
-        }
-        
-        // Mostrar estado de sincronización
-        this.updateSyncStatus();
+        // Ya no necesitamos listeners en tiempo real ni sincronización
     }
 
     setupEventListeners() {
@@ -599,37 +589,7 @@ class ExpenseTracker {
         });
     }
     
-    // Manejar cambios en tiempo real
-    handleRealtimeChanges(changes) {
-        changes.forEach(change => {
-            if (change.type === 'added' || change.type === 'modified') {
-                // Actualizar UI cuando se agregan o modifican transacciones
-                this.updateBalance();
-                this.loadTransactions();
-                this.showNotification('Datos sincronizados', 'info');
-            } else if (change.type === 'removed') {
-                // Actualizar UI cuando se eliminan transacciones
-                this.updateBalance();
-                this.loadTransactions();
-            }
-        });
-    }
-    
-    // Actualizar estado de sincronización
-    updateSyncStatus() {
-        if (this.storage.getSyncStatus) {
-            const status = this.storage.getSyncStatus();
-            
-            // Puedes mostrar un indicador visual del estado de sincronización
-            if (status.cloudEnabled && status.online) {
-                console.log('Sincronización en la nube activa');
-                // Aquí puedes agregar un ícono de nube en la UI
-            } else if (!status.online) {
-                console.log('Trabajando sin conexión');
-                // Mostrar indicador offline
-            }
-        }
-    }
+    // Ya no necesitamos manejo de cambios en tiempo real ni estado de sincronización
 
     // Mostrar notificación
     showNotification(message, type = 'info') {
@@ -929,12 +889,7 @@ class ExpenseTracker {
     }
 
     async refreshData() {
-        // Sincronizar con la nube si está disponible
-        if (this.storage.syncData) {
-            await this.storage.syncData();
-        }
-        
-        // Recargar datos
+        // Recargar datos locales
         await this.loadTransactions();
         await this.updateBalance();
         if (this.currentTab === 'stats' && chartManager) {

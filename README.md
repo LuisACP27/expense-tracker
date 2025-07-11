@@ -1,6 +1,6 @@
 # 💰 Expense Tracker PWA - Gestor de Gastos e Ingresos
 
-Una aplicación web progresiva (PWA) completa y escalable para gestionar finanzas personales con sincronización en la nube, funcionamiento offline y preparada para Google Play Store.
+Una aplicación web progresiva (PWA) simple y efectiva para gestionar finanzas personales con almacenamiento local seguro y preparada para Google Play Store.
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -8,17 +8,17 @@ Una aplicación web progresiva (PWA) completa y escalable para gestionar finanza
 
 ## ✨ Características Principales
 
-### 💾 Almacenamiento Híbrido
-- **Sincronización en la nube** con Firebase Firestore
-- **Funcionamiento offline** completo con localStorage
-- **Sincronización automática** cuando hay conexión
-- **Migración automática** de datos locales a la nube
+### 💾 Almacenamiento Local
+- **Almacenamiento completamente local** con localStorage
+- **Funcionamiento sin conexión** a internet
+- **Datos privados** que nunca salen de tu dispositivo
+- **Respaldo y restauración** manual de datos
 
-### 🔐 Seguridad Avanzada
-- **Autenticación con Google** (Firebase Auth)
-- **PIN, contraseña o huella digital** para acceso local
-- **Encriptación de datos** con Web Crypto API (PBKDF2 + AES-256)
-- **Sesiones seguras** con expiración automática
+### 🔐 Seguridad Local
+- **PIN de 4 dígitos** o **contraseña personalizada** para acceso
+- **Encriptación de credenciales** con Web Crypto API (PBKDF2 + AES-256)
+- **Datos seguros** almacenados localmente
+- **Opción de omitir seguridad** para uso personal
 
 ### 📊 Visualización de Datos
 - **Gráficos interactivos** de gastos por categoría
@@ -46,10 +46,9 @@ Una aplicación web progresiva (PWA) completa y escalable para gestionar finanza
 ## 🚀 Instalación y Uso
 
 ### Opción 1: Usar en línea
-1. Visita [https://tu-dominio.web.app](https://tu-dominio.web.app)
-2. Inicia sesión con Google
-3. Configura tu método de seguridad (PIN/contraseña/huella)
-4. ¡Comienza a registrar tus transacciones!
+1. Visita la URL de tu aplicación desplegada
+2. Configura tu método de seguridad (PIN/contraseña o sin protección)
+3. ¡Comienza a registrar tus transacciones!
 
 ### Opción 2: Instalación local
 ```bash
@@ -57,29 +56,22 @@ Una aplicación web progresiva (PWA) completa y escalable para gestionar finanza
 git clone https://github.com/tu-usuario/expense-tracker.git
 cd expense-tracker
 
-# Configurar Firebase (necesitas una cuenta)
-# 1. Crea un proyecto en Firebase Console
-# 2. Habilita Authentication y Firestore
-# 3. Copia tu configuración a js/firebase-config.js
-
 # Servir localmente
 npx serve -s .
 # O usar cualquier servidor HTTP local
+# No necesita configuración adicional - funciona completamente offline
 ```
 
-### Opción 3: Desplegar en Firebase
+### Opción 3: Desplegar en cualquier hosting estático
 ```bash
-# Instalar Firebase CLI
-npm install -g firebase-tools
+# Funciona en cualquier hosting estático como:
+# - GitHub Pages
+# - Netlify
+# - Vercel
+# - Firebase Hosting
+# - O cualquier servidor web
 
-# Iniciar sesión
-firebase login
-
-# Inicializar proyecto
-firebase init
-
-# Desplegar
-firebase deploy
+# Solo necesitas subir los archivos a tu hosting preferido
 ```
 
 ## 📱 Preparación para Google Play Store
@@ -114,15 +106,15 @@ npx cap open android
 El proyecto sigue una arquitectura modular y escalable:
 
 ```
-┌─────────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Frontend PWA  │────▶│ Storage      │────▶│  Firebase   │
-│   (HTML/JS)     │     │ Adapter      │     │  Firestore  │
-└─────────────────┘     └──────────────┘     └─────────────┘
+┌─────────────────┐     ┌──────────────┐
+│   Frontend PWA  │────▶│ localStorage │
+│   (HTML/JS)     │     │   (Local)    │
+└─────────────────┘     └──────────────┘
                                │
                                ▼
                         ┌──────────────┐
-                        │ localStorage │
-                        │  (Offline)   │
+                        │   Security   │
+                        │  (Encryption)│
                         └──────────────┘
 ```
 
@@ -132,10 +124,10 @@ Ver [ARCHITECTURE.md](ARCHITECTURE.md) para más detalles.
 
 - **Frontend**: HTML5, CSS3, JavaScript ES6+
 - **Gráficos**: Chart.js
-- **Base de datos**: Firebase Firestore + localStorage
-- **Autenticación**: Firebase Auth
+- **Almacenamiento**: localStorage (local)
+- **Seguridad**: Web Crypto API (PBKDF2 + AES-256)
 - **PWA**: Service Workers, Web App Manifest
-- **Seguridad**: Web Crypto API
+- **Sin dependencias externas**: 100% autónomo
 
 ## 📈 Roadmap
 

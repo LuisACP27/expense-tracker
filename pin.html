@@ -282,28 +282,16 @@
     <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
 
+    <!-- Security Manager -->
+    <script src="js/security.js"></script>
+    
     <script>
-        // Variable global para el prefijo del usuario
-        let userPrefix = '';
-
         document.addEventListener('DOMContentLoaded', () => {
-            // Cargar información del usuario
-            const userId = localStorage.getItem('user_id');
-            const userName = localStorage.getItem('user_name');
-            const userEmail = localStorage.getItem('user_email');
-            const userPhoto = localStorage.getItem('user_photo');
-
-            // Obtener o crear el prefijo único para este usuario
-            userPrefix = localStorage.getItem('current_user_prefix') || `user_${userId}`;
-            localStorage.setItem('current_user_prefix', userPrefix);
-
-            // Actualizar información del usuario en la UI
-            if (userName) document.getElementById('user-name').textContent = userName;
-            if (userEmail) document.getElementById('user-email').textContent = userEmail;
-            if (userPhoto) document.getElementById('user-avatar').src = userPhoto;
-
             // Obtener el tipo de autenticación
-            const authType = localStorage.getItem(`${userPrefix}_auth_type`);
+            const authType = localStorage.getItem('auth_type');
+
+            // Ocultar información de usuario ya que no usamos Google Auth
+            document.querySelector('.user-info').style.display = 'none';
 
             // Mostrar la interfaz correspondiente
             switch(authType) {
@@ -313,12 +301,14 @@
                 case 'password':
                     setupPasswordInterface();
                     break;
-                case 'biometric':
-                    setupBiometricInterface();
+                case 'none':
+                    // Si no hay seguridad, ir directo a la app
+                    sessionStorage.setItem('auth_ok', '1');
+                    window.location.href = 'index.html';
                     break;
                 default:
-                    // Si no hay método de autenticación configurado, redirigir a security-options.html
-                    window.location.href = 'security-options.html';
+                    // Si no hay método de autenticación configurado, redirigir a configuración
+                    window.location.href = 'security-setup.html';
             }
         });
 
@@ -328,23 +318,32 @@
             const verifyButton = document.getElementById('verify-pin');
             const errorElement = document.getElementById('pin-error');
 
-            pinInput.addEventListener('input', () => {
-                if (pinInput.value.length === 4) {
+            // Solo permitir números en el input
+            pinInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                if (e.target.value.length === 4) {
                     verifyPin();
                 }
             });
 
             verifyButton.addEventListener('click', verifyPin);
 
-            function verifyPin() {
+            async function verifyPin() {
                 const enteredPin = pinInput.value;
-                const storedPin = localStorage.getItem(`${userPrefix}_pin`);
-
-                if (enteredPin === storedPin) {
-                    sessionStorage.setItem('pin_ok', '1');
-                    window.location.href = 'index.html';
-                } else {
-                    errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
+                
+                try {
+                    const isValid = await securityManager.verifyCredentials('', 'pin', enteredPin);
+                    
+                    if (isValid) {
+                        sessionStorage.setItem('auth_ok', '1');
+                        window.location.href = 'index.html';
+                    } else {
+                        errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
+                        errorElement.style.display = 'block';
+                        pinInput.value = '';
+                    }
+                } catch (error) {
+                    errorElement.textContent = 'Error al verificar el PIN.';
                     errorElement.style.display = 'block';
                     pinInput.value = '';
                 }
@@ -364,15 +363,22 @@
                 }
             });
 
-            function verifyPassword() {
+            async function verifyPassword() {
                 const enteredPassword = passwordInput.value;
-                const storedPassword = localStorage.getItem(`${userPrefix}_password`);
-
-                if (enteredPassword === storedPassword) {
-                    sessionStorage.setItem('pin_ok', '1');
-                    window.location.href = 'index.html';
-                } else {
-                    errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+                
+                try {
+                    const isValid = await securityManager.verifyCredentials('', 'password', enteredPassword);
+                    
+                    if (isValid) {
+                        sessionStorage.setItem('auth_ok', '1');
+                        window.location.href = 'index.html';
+                    } else {
+                        errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+                        errorElement.style.display = 'block';
+                        passwordInput.value = '';
+                    }
+                } catch (error) {
+                    errorElement.textContent = 'Error al verificar la contraseña.';
                     errorElement.style.display = 'block';
                     passwordInput.value = '';
                 }

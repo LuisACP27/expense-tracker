@@ -7,7 +7,6 @@
     "start": "serve -s .",
     "dev": "serve -s . -l 3000",
     "build": "echo 'No build process required for vanilla JS'",
-    "deploy": "firebase deploy",
     "test": "echo 'TODO: Add tests'",
     "capacitor:init": "cap init",
     "capacitor:add:android": "cap add android",
@@ -18,8 +17,7 @@
   "keywords": [
     "expense-tracker",
     "pwa",
-    "firebase",
-    "firestore",
+    "local-storage",
     "financial-management",
     "progressive-web-app"
   ],
@@ -29,7 +27,6 @@
     "@capacitor/android": "^5.0.0",
     "@capacitor/cli": "^5.0.0",
     "@capacitor/core": "^5.0.0",
-    "firebase-tools": "^12.0.0",
     "serve": "^14.2.0"
   },
   "capacitor": {

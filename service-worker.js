@@ -5,11 +5,15 @@ const urlsToCache = [
     '/',
     '/index.html',
     '/settings.html',
+    '/security-setup.html',
+    '/pin.html',
     '/css/styles.css',
     '/js/app.js',
     '/js/storage.js',
     '/js/charts.js',
-    '/js/settings.js',
+    '/js/security.js',
+    '/js/language.js',
+    '/js/themes.js',
     '/manifest.json',
     'https://cdn.jsdelivr.net/npm/chart.js'
 ];

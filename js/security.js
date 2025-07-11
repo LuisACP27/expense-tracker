@@ -107,13 +107,13 @@ class SecurityManager {
         try {
             if (type === 'pin' || type === 'password') {
                 const { hash, salt } = await this.hashPassword(credential);
-                localStorage.setItem(`${userPrefix}_${type}_hash`, hash);
-                localStorage.setItem(`${userPrefix}_${type}_salt`, salt);
-                localStorage.setItem(`${userPrefix}_auth_type`, type);
+                localStorage.setItem(`${type}_hash`, hash);
+                localStorage.setItem(`${type}_salt`, salt);
+                localStorage.setItem('auth_type', type);
                 return true;
             } else if (type === 'biometric') {
-                localStorage.setItem(`${userPrefix}_auth_type`, 'biometric');
-                localStorage.setItem(`${userPrefix}_biometric_enabled`, 'true');
+                localStorage.setItem('auth_type', 'biometric');
+                localStorage.setItem('biometric_enabled', 'true');
                 return true;
             }
         } catch (error) {
@@ -126,15 +126,15 @@ class SecurityManager {
     async verifyCredentials(userPrefix, type, credential) {
         try {
             if (type === 'pin' || type === 'password') {
-                const storedHash = localStorage.getItem(`${userPrefix}_${type}_hash`);
-                const storedSalt = localStorage.getItem(`${userPrefix}_${type}_salt`);
+                const storedHash = localStorage.getItem(`${type}_hash`);
+                const storedSalt = localStorage.getItem(`${type}_salt`);
                 
                 if (!storedHash || !storedSalt) {
                     // Verificar formato antiguo por compatibilidad
-                    const oldCredential = localStorage.getItem(`${userPrefix}_${type}`);
+                    const oldCredential = localStorage.getItem(type);
                     if (oldCredential && oldCredential === credential) {
                         // Migrar al nuevo formato
-                        await this.saveCredentials(userPrefix, type, credential);
+                        await this.saveCredentials('', type, credential);
                         return true;
                     }
                     return false;
@@ -143,7 +143,7 @@ class SecurityManager {
                 return await this.verifyPassword(credential, storedHash, storedSalt);
             } else if (type === 'biometric') {
                 // La verificación biométrica se maneja con Web Authentication API
-                return await this.verifyBiometric(userPrefix);
+                return await this.verifyBiometric('');
             }
         } catch (error) {
             console.error('Error verificando credenciales:', error);
@@ -160,14 +160,14 @@ class SecurityManager {
         }
         
         // Por ahora, simulamos la verificación
-        return localStorage.getItem(`${userPrefix}_biometric_enabled`) === 'true';
+        return localStorage.getItem('biometric_enabled') === 'true';
     }
 
     // Limpiar credenciales antiguas
-    cleanupOldCredentials(userPrefix) {
+    cleanupOldCredentials() {
         // Eliminar credenciales en texto plano si existen
-        localStorage.removeItem(`${userPrefix}_pin`);
-        localStorage.removeItem(`${userPrefix}_password`);
+        localStorage.removeItem('pin');
+        localStorage.removeItem('password');
         localStorage.removeItem('user_pin');
         localStorage.removeItem('user_password');
     }

@@ -4,7 +4,7 @@ class ChartManager {
     constructor() {
         this.categoryChart = null;
         this.trendChart = null;
-        this.storage = typeof storageAdapter !== 'undefined' ? storageAdapter : storage;
+        this.storage = storage; // Usar solo localStorage
         this.chartColors = {
             income: '#4CAF50',
             expense: '#f44336',

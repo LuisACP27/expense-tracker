@@ -11,12 +11,12 @@
     <script src="js/language.js"></script>
     <script src="js/themes.js"></script>
     <script>
-      // Verificar si el PIN está habilitado y si se ha ingresado correctamente
-      const pinEnabled = localStorage.getItem('pin_enabled') !== 'false'; // Por defecto habilitado
-      const pinOk = sessionStorage.getItem('pin_ok') === '1';
+      // Verificar si hay método de seguridad configurado y si se ha autenticado
+      const authType = localStorage.getItem('auth_type');
+      const isAuthenticated = sessionStorage.getItem('auth_ok') === '1';
       
-      // Solo redirigir a pin.html si el PIN está habilitado y no se ha ingresado
-      if (pinEnabled && !pinOk && !window.location.pathname.endsWith('pin.html')) {
+      // Si hay método de seguridad configurado y no está autenticado, redirigir a PIN
+      if (authType && authType !== 'none' && !isAuthenticated) {
         window.location.href = 'pin.html';
       }
     </script>
@@ -123,7 +123,7 @@
                 <div class="bottom-nav-icon">⚙️</div>
                 <div class="bottom-nav-text">Ajustes</div>
             </a>
-            <a href="pin.html" class="bottom-nav-item">
+            <a href="#" class="bottom-nav-item" onclick="logout()">
                 <div class="bottom-nav-icon">🚪</div>
                 <div class="bottom-nav-text">Salir</div>
             </a>
@@ -231,7 +231,7 @@
             
             // Configurar botón de cambio de seguridad
             document.getElementById('change-security').addEventListener('click', function() {
-                window.location.href = 'security-options.html';
+                window.location.href = 'security-setup.html';
             });
             
             // Configurar botón de exportar datos
@@ -278,43 +278,32 @@
             // Configurar botón de cerrar sesión
             document.getElementById('logout-btn').addEventListener('click', function() {
                 showConfirmDialog(t.confirmLogout, function() {
-                    // Limpiar datos de usuario
-                    localStorage.removeItem('user_id');
-                    localStorage.removeItem('user_email');
-                    localStorage.removeItem('user_name');
-                    localStorage.removeItem('user_photo');
-                    localStorage.removeItem('current_user_prefix');
+                    // Limpiar sesión local
+                    sessionStorage.removeItem('auth_ok');
                     
-                    // Limpiar idioma temporal
-                    window.appLanguage.clearTempLanguage();
-                    
-                    // Cerrar sesión de Firebase
-                    firebase.auth().signOut().then(() => {
-                        window.location.href = 'welcome.html';
-                    });
+                    // Redirigir a página de autenticación
+                    window.location.href = 'pin.html';
                 });
             });
             
-            // Mostrar información de usuario
+            // Mostrar información de cuenta local
             const userAccountInfo = document.getElementById('user-account-info');
-            const userId = localStorage.getItem('user_id');
-            const userName = localStorage.getItem('user_name');
-            const userEmail = localStorage.getItem('user_email');
-            const userPhoto = localStorage.getItem('user_photo');
+            const authType = localStorage.getItem('auth_type');
             
-            if (userId) {
-                userAccountInfo.innerHTML = `
-                    <img src="${userPhoto || 'https://via.placeholder.com/50'}" alt="Avatar" class="user-avatar">
-                    <div>
-                        <p class="user-name">${userName || 'Usuario'}</p>
-                        <p class="user-email">${userEmail || ''}</p>
-                    </div>
-                `;
-            } else {
-                userAccountInfo.innerHTML = `
-                    <p>No has iniciado sesión con una cuenta.</p>
-                `;
+            let authTypeText = 'Sin protección';
+            if (authType === 'pin') {
+                authTypeText = 'Protegido con PIN';
+            } else if (authType === 'password') {
+                authTypeText = 'Protegido con contraseña';
             }
+            
+            userAccountInfo.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">👤</div>
+                    <p class="user-name">Usuario Local</p>
+                    <p class="user-email">${authTypeText}</p>
+                </div>
+            `;
         });
         
         // Función para mostrar diálogo de confirmación
@@ -359,6 +348,14 @@
             setTimeout(() => {
                 notification.remove();
             }, 3000);
+        }
+        
+        // Función para cerrar sesión
+        function logout() {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                sessionStorage.removeItem('auth_ok');
+                window.location.href = 'pin.html';
+            }
         }
     </script>
 </body>
