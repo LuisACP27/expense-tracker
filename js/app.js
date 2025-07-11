@@ -17,9 +17,9 @@ class ExpenseTracker {
         await this.loadMonthFilter();
 
         // Renderizar categorías dinámicamente
-        await this.renderCategories();
+        this.renderCategories();
         // Asegurar que se muestren las categorías correctas según el tipo seleccionado
-        await this.updateCategoryOptions();
+        this.updateCategoryOptions();
 
         // Configurar event listeners
         this.setupEventListeners();
@@ -234,16 +234,16 @@ class ExpenseTracker {
     }
 
     // Actualizar opciones de categoría según el tipo
-    async updateCategoryOptions() {
+    updateCategoryOptions() {
         const type = document.querySelector('input[name="type"]:checked').value;
-        await this.renderCategories(type);
+        this.renderCategories(type);
     }
 
     // Renderizar categorías dinámicamente en el select
-    async renderCategories(type = null) {
+    renderCategories(type = null) {
         const categorySelect = document.getElementById('category');
-        const categories = await this.storage.getCategories();
-        if (!categories) return;
+        const data = this.storage.getData();
+        if (!data || !data.categories) return;
 
         // Limpiar opciones excepto la primera
         categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
@@ -252,8 +252,8 @@ class ExpenseTracker {
         const selectedType = type || document.querySelector('input[name="type"]:checked').value;
         
         // Mostrar solo las categorías del tipo seleccionado
-        if (categories[selectedType] && categories[selectedType].length > 0) {
-            categories[selectedType].forEach(cat => {
+        if (data.categories[selectedType] && data.categories[selectedType].length > 0) {
+            data.categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
                 option.textContent = `${cat.icon} ${cat.name}`;
@@ -289,13 +289,13 @@ class ExpenseTracker {
     }
 
     // Renderizar listas de categorías en el modal
-    async renderCategoryLists(type) {
+    renderCategoryLists(type) {
         const incomeListContainer = document.querySelector('#income-category-list').parentElement;
         const expenseListContainer = document.querySelector('#expense-category-list').parentElement;
         const incomeList = document.getElementById('income-category-list');
         const expenseList = document.getElementById('expense-category-list');
-        const categories = await this.storage.getCategories();
-        if (!categories) return;
+        const data = this.storage.getData();
+        if (!data || !data.categories) return;
 
         incomeList.innerHTML = '';
         expenseList.innerHTML = '';
@@ -304,7 +304,7 @@ class ExpenseTracker {
             incomeListContainer.style.display = 'block';
             expenseListContainer.style.display = 'none';
 
-            categories.income.forEach(cat => {
+            data.categories.income.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -318,7 +318,7 @@ class ExpenseTracker {
             incomeListContainer.style.display = 'none';
             expenseListContainer.style.display = 'block';
 
-            categories.expense.forEach(cat => {
+            data.categories.expense.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -333,7 +333,7 @@ class ExpenseTracker {
             incomeListContainer.style.display = 'block';
             expenseListContainer.style.display = 'block';
 
-            categories.income.forEach(cat => {
+            data.categories.income.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -344,7 +344,7 @@ class ExpenseTracker {
                 incomeList.appendChild(li);
             });
 
-            categories.expense.forEach(cat => {
+            data.categories.expense.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
                 const delBtn = document.createElement('button');
@@ -358,7 +358,7 @@ class ExpenseTracker {
     }
 
     // Añadir categoría nueva
-    async addCategory(type) {
+    addCategory(type) {
         const nameInput = document.getElementById(`new-${type}-category-name`);
         const iconInput = document.getElementById(`new-${type}-category-icon`);
         const name = nameInput.value.trim();
@@ -375,10 +375,10 @@ class ExpenseTracker {
 
         const newCategory = { id, name, icon };
 
-        const success = await this.storage.addCategory(type, newCategory);
+        const success = this.storage.addCategory(type, newCategory);
         if (success) {
-            await this.renderCategoryLists(type);
-            await this.renderCategories(type);
+            this.renderCategoryLists(type);
+            this.renderCategories(type);
             nameInput.value = '';
             iconInput.value = '';
             this.showNotification(`Categoría "${name}" agregada`, 'success');
@@ -388,14 +388,14 @@ class ExpenseTracker {
     }
 
     // Eliminar categoría
-    async deleteCategory(type, categoryId) {
+    deleteCategory(type, categoryId) {
         this.showConfirmDialog('¿Estás seguro de que quieres eliminar esta categoría?')
-            .then(async confirmed => {
+            .then(confirmed => {
                 if (confirmed) {
-                    const success = await this.storage.deleteCategory(type, categoryId);
+                    const success = this.storage.deleteCategory(type, categoryId);
                     if (success) {
-                        await this.renderCategoryLists(type);
-                        await this.renderCategories(type);
+                        this.renderCategoryLists(type);
+                        this.renderCategories(type);
                         this.showNotification('Categoría eliminada', 'info');
                     } else {
                         alert('No se pudo eliminar la categoría');
@@ -608,19 +608,19 @@ class ExpenseTracker {
         }, 3000);
     }
 
-    async openCategoryPicker() {
+    openCategoryPicker() {
         const type = document.querySelector('input[name="type"]:checked').value;
-        const allCategories = await this.storage.getCategories();
+        const data = this.storage.getData();
         
         // Verificar que existan datos y categorías
-        if (!allCategories || !allCategories[type] || allCategories[type].length === 0) {
+        if (!data || !data.categories || !data.categories[type] || data.categories[type].length === 0) {
             // Si no hay categorías, mostrar un mensaje
             this.showNotification('No hay categorías disponibles. Por favor, crea una categoría primero.', 'info');
             this.openCategoryModal();
             return;
         }
         
-        const categories = allCategories[type];
+        const categories = data.categories[type];
         const pickerList = document.getElementById('category-picker-list');
         
         // Limpiar lista
@@ -822,10 +822,10 @@ class ExpenseTracker {
         return closestIndex;
     }
 
-    async selectCategoryFromPicker(idx) {
+    selectCategoryFromPicker(idx) {
         const type = document.querySelector('input[name="type"]:checked').value;
-        const allCategories = await this.storage.getCategories();
-        const categories = allCategories[type];
+        const data = this.storage.getData();
+        const categories = data.categories[type];
         const cat = categories[idx];
         if (cat) {
             // Seleccionar en el select real

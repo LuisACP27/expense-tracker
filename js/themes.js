@@ -20,16 +20,7 @@ const themes = {
         '--income-color': '#2196F3',
         '--expense-color': '#f44336'
     },
-    dark: {
-        '--primary-color': '#212121',
-        '--primary-color-rgb': '33, 33, 33',
-        '--secondary-color': '#424242',
-        '--background-color': '#121212',
-        '--card-background': '#1e1e1e',
-        '--border-color': '#424242',
-        '--income-color': '#81c784',
-        '--expense-color': '#e57373'
-    },
+
     red: {
         '--primary-color': '#e53935',
         '--primary-color-rgb': '229, 57, 53',
@@ -99,14 +90,9 @@ function changeTheme(themeName) {
         document.documentElement.style.setProperty(key, theme[key]);
     });
     
-    // Manejar modo oscuro
-    if (themeName === 'dark') {
-        document.body.classList.add('night-mode');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#212121');
-    } else {
-        document.body.classList.remove('night-mode');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
-    }
+    // Actualizar meta theme-color
+    document.body.classList.remove('night-mode');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
     
     return true;
 }

@@ -147,20 +147,20 @@ class ChartManager {
     }
 
     // Actualizar gráfico de categorías
-    async updateCategoryChart(month = 'all') {
+    updateCategoryChart(month = 'all') {
         if (!this.categoryChart) return;
 
-        const categoryStats = await this.storage.getCategoryStats('expense', month);
+        const categoryStats = this.storage.getCategoryStats('expense', month);
         const labels = [];
         const data = [];
 
-        for (const [categoryId, amount] of Object.entries(categoryStats)) {
-            const categoryInfo = await this.storage.getCategoryInfo(categoryId);
+        Object.entries(categoryStats).forEach(([categoryId, amount]) => {
+            const categoryInfo = this.storage.getCategoryInfo(categoryId);
             if (categoryInfo) {
                 labels.push(categoryInfo.name);
                 data.push(amount);
             }
-        }
+        });
 
         this.categoryChart.data.labels = labels;
         this.categoryChart.data.datasets[0].data = data;
@@ -168,11 +168,11 @@ class ChartManager {
     }
 
     // Actualizar gráfico de tendencias
-    async updateTrendChart() {
+    updateTrendChart() {
         if (!this.trendChart) return;
 
         const currentYear = new Date().getFullYear();
-        const monthlyStats = await this.storage.getMonthlyStats(currentYear);
+        const monthlyStats = this.storage.getMonthlyStats(currentYear);
         const months = [];
         const incomeData = [];
         const expenseData = [];
@@ -197,15 +197,12 @@ class ChartManager {
     }
 
     // Actualizar resumen mensual
-    async updateMonthlySummary() {
+    updateMonthlySummary() {
         const summaryContainer = document.getElementById('monthly-summary');
         if (!summaryContainer) return;
 
         const currentMonth = new Date().toISOString().slice(0, 7);
-        const transactions = await this.storage.getTransactions({ 
-            type: 'all', 
-            month: currentMonth 
-        });
+        const transactions = this.storage.getFilteredTransactions('all', currentMonth);
         
         // Calcular estadísticas del mes
         let monthIncome = 0;
@@ -234,7 +231,7 @@ class ChartManager {
             }
         });
 
-        const topCategoryInfo = topCategory ? await this.storage.getCategoryInfo(topCategory) : null;
+        const topCategoryInfo = topCategory ? this.storage.getCategoryInfo(topCategory) : null;
 
         // Generar HTML del resumen
         summaryContainer.innerHTML = `
