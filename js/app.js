@@ -831,7 +831,7 @@ class ExpenseTracker {
             // Seleccionar en el select real
             const select = document.getElementById('category');
             select.value = cat.id;
-            select.dispatchEvent(new Event('change'));
+            // No disparar evento change, solo estamos seleccionando una categoría
             this.closeCategoryPicker();
         }
     }
