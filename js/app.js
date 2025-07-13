@@ -4,6 +4,7 @@ class ExpenseTracker {
     constructor() {
         this.currentTab = 'add';
         this.storage = storage; // Usar solo localStorage
+        console.log('ExpenseTracker constructor - storage:', this.storage);
         this.init();
     }
 
@@ -235,23 +236,35 @@ class ExpenseTracker {
 
     // Actualizar opciones de categoría según el tipo
     updateCategoryOptions() {
+        console.log('updateCategoryOptions llamado');
         const typeRadio = document.querySelector('input[name="type"]:checked');
-        if (!typeRadio) return;
+        if (!typeRadio) {
+            console.log('ERROR: No hay radio button seleccionado');
+            return;
+        }
         
         const type = typeRadio.value;
+        console.log('Tipo seleccionado:', type);
         this.renderCategories(type);
     }
 
     // Renderizar categorías dinámicamente en el select
     renderCategories(type = null) {
+        console.log('renderCategories llamado con type:', type);
         const categorySelect = document.getElementById('category');
-        if (!categorySelect) return;
+        if (!categorySelect) {
+            console.log('ERROR: No se encontró el elemento category select');
+            return;
+        }
         
         const data = this.storage.getData();
+        console.log('Datos del storage:', data);
         if (!data || !data.categories) {
+            console.log('No hay datos, inicializando storage...');
             // Si no hay datos, inicializar el storage
             this.storage.initializeStorage();
             const newData = this.storage.getData();
+            console.log('Nuevos datos después de inicializar:', newData);
             if (!newData || !newData.categories) return;
         }
 
@@ -267,6 +280,7 @@ class ExpenseTracker {
         
         // Mostrar solo las categorías del tipo seleccionado
         if (currentData.categories[selectedType] && currentData.categories[selectedType].length > 0) {
+            console.log(`Cargando ${currentData.categories[selectedType].length} categorías de ${selectedType}`);
             currentData.categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
@@ -274,6 +288,7 @@ class ExpenseTracker {
                 categorySelect.appendChild(option);
             });
         } else {
+            console.log(`No hay categorías para ${selectedType}`);
             // Si no hay categorías, agregar una opción deshabilitada
             const option = document.createElement('option');
             option.disabled = true;
