@@ -16,13 +16,11 @@ class ExpenseTracker {
         await this.loadTransactions();
         await this.loadMonthFilter();
 
-        // Renderizar categorías dinámicamente
-        this.renderCategories();
-        // Asegurar que se muestren las categorías correctas según el tipo seleccionado
-        this.updateCategoryOptions();
-
         // Configurar event listeners
         this.setupEventListeners();
+        
+        // Renderizar categorías dinámicamente DESPUÉS de configurar listeners
+        this.updateCategoryOptions();
         
         // Inicializar gráficos cuando se abra la pestaña de estadísticas
         this.initChartsOnFirstView = true;
@@ -245,29 +243,34 @@ class ExpenseTracker {
 
     // Actualizar opciones de categoría según el tipo
     updateCategoryOptions() {
-        console.log('updateCategoryOptions llamado');
         const typeRadio = document.querySelector('input[name="type"]:checked');
         if (!typeRadio) {
-            console.log('ERROR: No hay radio button seleccionado');
+            console.log('ERROR: No hay radio button seleccionado en updateCategoryOptions');
             return;
         }
         
         const type = typeRadio.value;
-        console.log('Tipo seleccionado:', type);
+        console.log('updateCategoryOptions - Tipo seleccionado:', type);
         this.renderCategories(type);
     }
 
     // Renderizar categorías dinámicamente en el select
     renderCategories(type = null) {
         const categorySelect = document.getElementById('category');
-        if (!categorySelect) return;
+        if (!categorySelect) {
+            console.log('ERROR: No se encontró el elemento category select');
+            return;
+        }
         
-        const data = this.storage.getData();
+        let data = this.storage.getData();
         if (!data || !data.categories) {
             // Si no hay datos, inicializar el storage
             this.storage.initializeStorage();
-            const newData = this.storage.getData();
-            if (!newData || !newData.categories) return;
+            data = this.storage.getData();
+            if (!data || !data.categories) {
+                console.log('ERROR: No se pudieron inicializar las categorías');
+                return;
+            }
         }
 
         // Limpiar opciones excepto la primera
@@ -275,25 +278,30 @@ class ExpenseTracker {
 
         // Si no se especifica tipo, usar el tipo seleccionado actualmente
         const typeRadio = document.querySelector('input[name="type"]:checked');
-        if (!typeRadio) return;
+        if (!typeRadio) {
+            console.log('ERROR: No hay radio button seleccionado');
+            return;
+        }
         
         const selectedType = type || typeRadio.value;
-        const currentData = data || this.storage.getData();
+        console.log('Cargando categorías para tipo:', selectedType);
         
         // Mostrar solo las categorías del tipo seleccionado
-        if (currentData.categories[selectedType] && currentData.categories[selectedType].length > 0) {
-            currentData.categories[selectedType].forEach(cat => {
+        if (data.categories[selectedType] && data.categories[selectedType].length > 0) {
+            data.categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
                 option.textContent = `${cat.icon} ${cat.name}`;
                 categorySelect.appendChild(option);
             });
+            console.log(`Se cargaron ${data.categories[selectedType].length} categorías de ${selectedType}`);
         } else {
             // Si no hay categorías, agregar una opción deshabilitada
             const option = document.createElement('option');
             option.disabled = true;
             option.textContent = 'No hay categorías disponibles';
             categorySelect.appendChild(option);
+            console.log('No hay categorías disponibles para el tipo:', selectedType);
         }
 
         // Resetear selección
