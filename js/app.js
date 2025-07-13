@@ -27,6 +27,7 @@ class ExpenseTracker {
         console.log('Actualizando opciones de categorías...');
         // Pequeño delay para asegurar que el DOM esté listo
         setTimeout(() => {
+            this.verifyDOMElements();
             this.updateCategoryOptions();
         }, 100);
         
@@ -36,6 +37,36 @@ class ExpenseTracker {
         this.setupSwipeGestures();
         
         console.log('Aplicación inicializada correctamente');
+    }
+
+    verifyDOMElements() {
+        console.log('🔍 Verificando elementos del DOM...');
+        
+        const elements = {
+            'category': document.getElementById('category'),
+            'manage-categories-btn': document.getElementById('manage-categories-btn'),
+            'category-modal': document.getElementById('category-modal'),
+            'income-category-list': document.getElementById('income-category-list'),
+            'expense-category-list': document.getElementById('expense-category-list'),
+            'expense-radio': document.querySelector('input[name="type"][value="expense"]'),
+            'income-radio': document.querySelector('input[name="type"][value="income"]')
+        };
+
+        let allElementsFound = true;
+        Object.keys(elements).forEach(key => {
+            if (elements[key]) {
+                console.log(`✓ ${key} encontrado`);
+            } else {
+                console.log(`❌ ${key} NO encontrado`);
+                allElementsFound = false;
+            }
+        });
+
+        if (allElementsFound) {
+            console.log('✓ Todos los elementos del DOM están disponibles');
+        } else {
+            console.log('⚠️ Algunos elementos del DOM no están disponibles');
+        }
     }
 
     setupEventListeners() {
@@ -50,7 +81,13 @@ class ExpenseTracker {
 
         // Cambio de tipo de transacción
         document.querySelectorAll('input[name="type"]').forEach(radio => {
-            radio.addEventListener('change', () => this.updateCategoryOptions());
+            radio.addEventListener('change', () => {
+                console.log('Tipo de transacción cambiado a:', radio.value);
+                // Forzar actualización inmediata de categorías
+                setTimeout(() => {
+                    this.updateCategoryOptions();
+                }, 50);
+            });
         });
 
         // Event listener para el select de categorías
@@ -324,14 +361,25 @@ class ExpenseTracker {
                 option.textContent = `${cat.icon} ${cat.name}`;
                 categorySelect.appendChild(option);
             });
-            console.log(`Se cargaron ${data.categories[selectedType].length} categorías de ${selectedType}`);
+            console.log(`✓ Se cargaron ${data.categories[selectedType].length} categorías de ${selectedType}`);
         } else {
             // Si no hay categorías, agregar una opción deshabilitada
             const option = document.createElement('option');
             option.disabled = true;
             option.textContent = 'No hay categorías disponibles';
             categorySelect.appendChild(option);
-            console.log('No hay categorías disponibles para el tipo:', selectedType);
+            console.log('⚠️ No hay categorías disponibles para el tipo:', selectedType);
+            
+            // Intentar reinicializar el storage
+            console.log('Intentando reinicializar el storage...');
+            this.storage.initializeStorage();
+            const newData = this.storage.getData();
+            if (newData && newData.categories && newData.categories[selectedType] && newData.categories[selectedType].length > 0) {
+                console.log('✓ Storage reinicializado correctamente');
+                // Volver a renderizar con los nuevos datos
+                this.renderCategories(selectedType);
+                return;
+            }
         }
 
         // Resetear selección
