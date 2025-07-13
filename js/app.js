@@ -4,7 +4,6 @@ class ExpenseTracker {
     constructor() {
         this.currentTab = 'add';
         this.storage = storage; // Usar solo localStorage
-        console.log('ExpenseTracker constructor - storage:', this.storage);
         this.init();
     }
 
@@ -47,6 +46,16 @@ class ExpenseTracker {
         document.querySelectorAll('input[name="type"]').forEach(radio => {
             radio.addEventListener('change', () => this.updateCategoryOptions());
         });
+
+        // Event listener para el select de categorías
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) {
+            categorySelect.addEventListener('click', () => {
+                console.log('Select de categorías clickeado');
+                // Asegurar que las opciones estén actualizadas
+                this.updateCategoryOptions();
+            });
+        }
 
         // Botón para abrir modal de gestión de categorías
         const manageBtn = document.getElementById('manage-categories-btn');
@@ -250,21 +259,14 @@ class ExpenseTracker {
 
     // Renderizar categorías dinámicamente en el select
     renderCategories(type = null) {
-        console.log('renderCategories llamado con type:', type);
         const categorySelect = document.getElementById('category');
-        if (!categorySelect) {
-            console.log('ERROR: No se encontró el elemento category select');
-            return;
-        }
+        if (!categorySelect) return;
         
         const data = this.storage.getData();
-        console.log('Datos del storage:', data);
         if (!data || !data.categories) {
-            console.log('No hay datos, inicializando storage...');
             // Si no hay datos, inicializar el storage
             this.storage.initializeStorage();
             const newData = this.storage.getData();
-            console.log('Nuevos datos después de inicializar:', newData);
             if (!newData || !newData.categories) return;
         }
 
@@ -280,7 +282,6 @@ class ExpenseTracker {
         
         // Mostrar solo las categorías del tipo seleccionado
         if (currentData.categories[selectedType] && currentData.categories[selectedType].length > 0) {
-            console.log(`Cargando ${currentData.categories[selectedType].length} categorías de ${selectedType}`);
             currentData.categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
@@ -288,7 +289,6 @@ class ExpenseTracker {
                 categorySelect.appendChild(option);
             });
         } else {
-            console.log(`No hay categorías para ${selectedType}`);
             // Si no hay categorías, agregar una opción deshabilitada
             const option = document.createElement('option');
             option.disabled = true;
@@ -898,6 +898,11 @@ class ExpenseTracker {
         const minPullDistance = 100;
 
         container.addEventListener('touchstart', e => {
+            // No activar pull-to-refresh si se está tocando un elemento de formulario
+            if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
+                return;
+            }
+            
             if (container.scrollTop === 0) {
                 touchStartY = e.touches[0].clientY;
                 pullToRefresh.classList.add('visible');
