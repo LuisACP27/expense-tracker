@@ -34,8 +34,6 @@ class Storage {
         }
     }
 
-    // Método simplificado para obtener datos
-
     // Agregar una categoría
     addCategory(type, category) {
         const data = this.getData();

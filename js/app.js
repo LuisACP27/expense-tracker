@@ -11,6 +11,10 @@ class ExpenseTracker {
         // Establecer fecha actual en el formulario
         this.setCurrentDate();
         
+        // Asegurar que el storage esté inicializado
+        console.log('Inicializando aplicación...');
+        this.storage.initializeStorage();
+        
         // Cargar datos iniciales
         await this.updateBalance();
         await this.loadTransactions();
@@ -20,14 +24,18 @@ class ExpenseTracker {
         this.setupEventListeners();
         
         // Renderizar categorías dinámicamente DESPUÉS de configurar listeners
-        this.updateCategoryOptions();
+        console.log('Actualizando opciones de categorías...');
+        // Pequeño delay para asegurar que el DOM esté listo
+        setTimeout(() => {
+            this.updateCategoryOptions();
+        }, 100);
         
         // Inicializar gráficos cuando se abra la pestaña de estadísticas
         this.initChartsOnFirstView = true;
 
         this.setupSwipeGestures();
         
-        // Ya no necesitamos listeners en tiempo real ni sincronización
+        console.log('Aplicación inicializada correctamente');
     }
 
     setupEventListeners() {
@@ -48,17 +56,31 @@ class ExpenseTracker {
         // Event listener para el select de categorías
         const categorySelect = document.getElementById('category');
         if (categorySelect) {
+            categorySelect.addEventListener('focus', () => {
+                console.log('Select de categorías enfocado');
+                // Asegurar que las opciones estén actualizadas
+                this.updateCategoryOptions();
+            });
             categorySelect.addEventListener('click', () => {
                 console.log('Select de categorías clickeado');
                 // Asegurar que las opciones estén actualizadas
                 this.updateCategoryOptions();
             });
+        } else {
+            console.log('ERROR: No se encontró el select de categorías');
         }
 
         // Botón para abrir modal de gestión de categorías
         const manageBtn = document.getElementById('manage-categories-btn');
         if (manageBtn) {
-            manageBtn.addEventListener('click', () => this.openCategoryModal());
+            manageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Botón de gestión de categorías clickeado');
+                this.openCategoryModal();
+            });
+        } else {
+            console.log('ERROR: No se encontró el botón de gestión de categorías');
         }
 
         // Botón para cerrar modal de gestión de categorías
@@ -246,6 +268,11 @@ class ExpenseTracker {
         const typeRadio = document.querySelector('input[name="type"]:checked');
         if (!typeRadio) {
             console.log('ERROR: No hay radio button seleccionado en updateCategoryOptions');
+            // Seleccionar 'expense' por defecto si no hay nada seleccionado
+            const expenseRadio = document.querySelector('input[name="type"][value="expense"]');
+            if (expenseRadio) {
+                expenseRadio.checked = true;
+            }
             return;
         }
         
@@ -263,10 +290,13 @@ class ExpenseTracker {
         }
         
         let data = this.storage.getData();
+        console.log('Datos obtenidos del storage:', data);
+        
         if (!data || !data.categories) {
-            // Si no hay datos, inicializar el storage
+            console.log('Inicializando storage porque no hay datos...');
             this.storage.initializeStorage();
             data = this.storage.getData();
+            console.log('Datos después de inicializar:', data);
             if (!data || !data.categories) {
                 console.log('ERROR: No se pudieron inicializar las categorías');
                 return;
@@ -310,14 +340,23 @@ class ExpenseTracker {
 
     // Abrir modal de gestión de categorías
     openCategoryModal() {
+        console.log('Abriendo modal de gestión de categorías');
         const typeRadio = document.querySelector('input[name="type"]:checked');
-        if (!typeRadio) return;
+        if (!typeRadio) {
+            console.log('ERROR: No hay tipo seleccionado para abrir modal');
+            return;
+        }
         
         const type = typeRadio.value;
+        console.log('Tipo seleccionado para modal:', type);
         const modal = document.getElementById('category-modal');
-        if (!modal) return;
+        if (!modal) {
+            console.log('ERROR: No se encontró el modal de categorías');
+            return;
+        }
         
         modal.classList.remove('hidden');
+        console.log('Modal abierto, renderizando listas...');
         this.renderCategoryLists(type);
     }
 
@@ -333,20 +372,32 @@ class ExpenseTracker {
 
     // Renderizar listas de categorías en el modal
     renderCategoryLists(type) {
+        console.log('Renderizando listas de categorías para tipo:', type);
         const incomeListContainer = document.querySelector('#income-category-list').parentElement;
         const expenseListContainer = document.querySelector('#expense-category-list').parentElement;
         const incomeList = document.getElementById('income-category-list');
         const expenseList = document.getElementById('expense-category-list');
+        
+        if (!incomeList || !expenseList) {
+            console.log('ERROR: No se encontraron las listas de categorías');
+            return;
+        }
+        
         const data = this.storage.getData();
-        if (!data || !data.categories) return;
+        if (!data || !data.categories) {
+            console.log('ERROR: No hay datos de categorías');
+            return;
+        }
 
         incomeList.innerHTML = '';
         expenseList.innerHTML = '';
 
-        if (type === 'income') {
-            incomeListContainer.style.display = 'block';
-            expenseListContainer.style.display = 'none';
+        // Mostrar ambas listas siempre, pero resaltar la activa
+        incomeListContainer.style.display = 'block';
+        expenseListContainer.style.display = 'block';
 
+        // Renderizar categorías de ingresos
+        if (data.categories.income && data.categories.income.length > 0) {
             data.categories.income.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
@@ -357,36 +408,10 @@ class ExpenseTracker {
                 li.appendChild(delBtn);
                 incomeList.appendChild(li);
             });
-        } else if (type === 'expense') {
-            incomeListContainer.style.display = 'none';
-            expenseListContainer.style.display = 'block';
+        }
 
-            data.categories.expense.forEach(cat => {
-                const li = document.createElement('li');
-                li.textContent = `${cat.icon} ${cat.name}`;
-                const delBtn = document.createElement('button');
-                delBtn.textContent = 'Eliminar';
-                delBtn.className = 'delete-category-btn';
-                delBtn.dataset.id = cat.id;
-                li.appendChild(delBtn);
-                expenseList.appendChild(li);
-            });
-        } else {
-            // Show both if no type specified
-            incomeListContainer.style.display = 'block';
-            expenseListContainer.style.display = 'block';
-
-            data.categories.income.forEach(cat => {
-                const li = document.createElement('li');
-                li.textContent = `${cat.icon} ${cat.name}`;
-                const delBtn = document.createElement('button');
-                delBtn.textContent = 'Eliminar';
-                delBtn.className = 'delete-category-btn';
-                delBtn.dataset.id = cat.id;
-                li.appendChild(delBtn);
-                incomeList.appendChild(li);
-            });
-
+        // Renderizar categorías de gastos
+        if (data.categories.expense && data.categories.expense.length > 0) {
             data.categories.expense.forEach(cat => {
                 const li = document.createElement('li');
                 li.textContent = `${cat.icon} ${cat.name}`;
@@ -398,6 +423,8 @@ class ExpenseTracker {
                 expenseList.appendChild(li);
             });
         }
+
+        console.log('Listas renderizadas correctamente');
     }
 
     // Añadir categoría nueva
