@@ -333,12 +333,12 @@
                 
                 try {
                     const isValid = await securityManager.verifyCredentials('', 'pin', enteredPin);
-                    
+
                     if (isValid) {
                         sessionStorage.setItem('auth_ok', '1');
-                        window.location.href = 'index.html';
-                    } else {
-                        errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
+                    window.location.href = 'index.html';
+                } else {
+                    errorElement.textContent = 'PIN incorrecto. Intenta de nuevo.';
                         errorElement.style.display = 'block';
                         pinInput.value = '';
                     }
@@ -368,12 +368,12 @@
                 
                 try {
                     const isValid = await securityManager.verifyCredentials('', 'password', enteredPassword);
-                    
+
                     if (isValid) {
                         sessionStorage.setItem('auth_ok', '1');
-                        window.location.href = 'index.html';
-                    } else {
-                        errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+                    window.location.href = 'index.html';
+                } else {
+                    errorElement.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
                         errorElement.style.display = 'block';
                         passwordInput.value = '';
                     }

@@ -91,8 +91,8 @@ function changeTheme(themeName) {
     });
     
     // Actualizar meta theme-color
-    document.body.classList.remove('night-mode');
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
+        document.body.classList.remove('night-mode');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme['--primary-color']);
     
     return true;
 }

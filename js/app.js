@@ -235,25 +235,39 @@ class ExpenseTracker {
 
     // Actualizar opciones de categoría según el tipo
     updateCategoryOptions() {
-        const type = document.querySelector('input[name="type"]:checked').value;
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        if (!typeRadio) return;
+        
+        const type = typeRadio.value;
         this.renderCategories(type);
     }
 
     // Renderizar categorías dinámicamente en el select
     renderCategories(type = null) {
         const categorySelect = document.getElementById('category');
+        if (!categorySelect) return;
+        
         const data = this.storage.getData();
-        if (!data || !data.categories) return;
+        if (!data || !data.categories) {
+            // Si no hay datos, inicializar el storage
+            this.storage.initializeStorage();
+            const newData = this.storage.getData();
+            if (!newData || !newData.categories) return;
+        }
 
         // Limpiar opciones excepto la primera
         categorySelect.innerHTML = '<option value="">Selecciona una categoría</option>';
 
         // Si no se especifica tipo, usar el tipo seleccionado actualmente
-        const selectedType = type || document.querySelector('input[name="type"]:checked').value;
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        if (!typeRadio) return;
+        
+        const selectedType = type || typeRadio.value;
+        const currentData = data || this.storage.getData();
         
         // Mostrar solo las categorías del tipo seleccionado
-        if (data.categories[selectedType] && data.categories[selectedType].length > 0) {
-            data.categories[selectedType].forEach(cat => {
+        if (currentData.categories[selectedType] && currentData.categories[selectedType].length > 0) {
+            currentData.categories[selectedType].forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
                 option.textContent = `${cat.icon} ${cat.name}`;
@@ -273,8 +287,14 @@ class ExpenseTracker {
 
     // Abrir modal de gestión de categorías
     openCategoryModal() {
-        const type = document.querySelector('input[name="type"]:checked').value;
-        document.getElementById('category-modal').classList.remove('hidden');
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        if (!typeRadio) return;
+        
+        const type = typeRadio.value;
+        const modal = document.getElementById('category-modal');
+        if (!modal) return;
+        
+        modal.classList.remove('hidden');
         this.renderCategoryLists(type);
     }
 
@@ -438,12 +458,23 @@ class ExpenseTracker {
 
     // Agregar transacción
     async addTransaction() {
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        const categorySelect = document.getElementById('category');
+        const amountInput = document.getElementById('amount');
+        const descriptionInput = document.getElementById('description');
+        const dateInput = document.getElementById('date');
+        
+        if (!typeRadio || !categorySelect || !amountInput || !descriptionInput || !dateInput) {
+            alert('Error: No se pudieron encontrar todos los elementos del formulario');
+            return;
+        }
+        
         const formData = {
-            type: document.querySelector('input[name="type"]:checked').value,
-            amount: parseFloat(document.getElementById('amount').value),
-            category: document.getElementById('category').value,
-            description: document.getElementById('description').value.trim(),
-            date: document.getElementById('date').value
+            type: typeRadio.value,
+            amount: parseFloat(amountInput.value),
+            category: categorySelect.value,
+            description: descriptionInput.value.trim(),
+            date: dateInput.value
         };
 
         // Validar datos
@@ -823,16 +854,23 @@ class ExpenseTracker {
     }
 
     selectCategoryFromPicker(idx) {
-        const type = document.querySelector('input[name="type"]:checked').value;
+        const typeRadio = document.querySelector('input[name="type"]:checked');
+        if (!typeRadio) return;
+        
+        const type = typeRadio.value;
         const data = this.storage.getData();
+        if (!data || !data.categories || !data.categories[type]) return;
+        
         const categories = data.categories[type];
         const cat = categories[idx];
         if (cat) {
             // Seleccionar en el select real
             const select = document.getElementById('category');
-            select.value = cat.id;
-            // No disparar evento change, solo estamos seleccionando una categoría
-            this.closeCategoryPicker();
+            if (select) {
+                select.value = cat.id;
+                // No disparar evento change, solo estamos seleccionando una categoría
+                this.closeCategoryPicker();
+            }
         }
     }
 
